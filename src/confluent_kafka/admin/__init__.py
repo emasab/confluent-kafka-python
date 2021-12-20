@@ -1,196 +1,21 @@
 """
 Kafka admin client: create, view, alter, and delete topics and resources.
 """
-from ..cimpl import (KafkaException, # noqa
+import concurrent.futures
+from ._config import ConfigSource, \
+                     ConfigEntry, \
+                     ConfigResource
+from ._resource import ResourceType, \
+                       ResourcePatternType
+from ._acl import AclOperation, \
+                  AclPermissionType, \
+                  AclBinding, \
+                  AclBindingFilter
+from ..cimpl import (KafkaException,
+                     KafkaError,
                      _AdminClientImpl,
                      NewTopic,
-                     NewPartitions,
-                     CONFIG_SOURCE_UNKNOWN_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG,
-                     CONFIG_SOURCE_STATIC_BROKER_CONFIG,
-                     CONFIG_SOURCE_DEFAULT_CONFIG,
-                     RESOURCE_UNKNOWN,
-                     RESOURCE_ANY,
-                     RESOURCE_TOPIC,
-                     RESOURCE_GROUP,
-                     RESOURCE_BROKER)
-
-import concurrent.futures
-import functools
-
-from enum import Enum
-
-
-class ConfigSource(Enum):
-    """
-    Enumerates the different sources of configuration properties.
-    Used by ConfigEntry to specify the
-    source of configuration properties returned by `describe_configs()`.
-    """
-    UNKNOWN_CONFIG = CONFIG_SOURCE_UNKNOWN_CONFIG  #: Unknown
-    DYNAMIC_TOPIC_CONFIG = CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG  #: Dynamic Topic
-    DYNAMIC_BROKER_CONFIG = CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG  #: Dynamic Broker
-    DYNAMIC_DEFAULT_BROKER_CONFIG = CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG  #: Dynamic Default Broker
-    STATIC_BROKER_CONFIG = CONFIG_SOURCE_STATIC_BROKER_CONFIG  #: Static Broker
-    DEFAULT_CONFIG = CONFIG_SOURCE_DEFAULT_CONFIG  #: Default
-
-
-class ConfigEntry(object):
-    """
-    Represents a configuration property. Returned by describe_configs() for each configuration
-    entry of the specified resource.
-
-    This class is typically not user instantiated.
-    """
-
-    def __init__(self, name, value,
-                 source=ConfigSource.UNKNOWN_CONFIG,
-                 is_read_only=False,
-                 is_default=False,
-                 is_sensitive=False,
-                 is_synonym=False,
-                 synonyms=[]):
-        """
-        This class is typically not user instantiated.
-        """
-        super(ConfigEntry, self).__init__()
-
-        self.name = name
-        """Configuration property name."""
-        self.value = value
-        """Configuration value (or None if not set or is_sensitive==True)."""
-        self.source = source
-        """Configuration source."""
-        self.is_read_only = bool(is_read_only)
-        """Indicates whether the configuration property is read-only."""
-        self.is_default = bool(is_default)
-        """Indicates whether the configuration property is using its default value."""
-        self.is_sensitive = bool(is_sensitive)
-        """
-        Indicates whether the configuration property value contains
-        sensitive information (such as security settings), in which
-        case .value is None."""
-        self.is_synonym = bool(is_synonym)
-        """Indicates whether the configuration property is a synonym for the parent configuration entry."""
-        self.synonyms = synonyms
-        """A list of synonyms (ConfigEntry) and alternate sources for this configuration property."""
-
-    def __repr__(self):
-        return "ConfigEntry(%s=\"%s\")" % (self.name, self.value)
-
-    def __str__(self):
-        return "%s=\"%s\"" % (self.name, self.value)
-
-
-@functools.total_ordering
-class ConfigResource(object):
-    """
-    Represents a resource that has configuration, and (optionally)
-    a collection of configuration properties for that resource. Used by
-    describe_configs() and alter_configs().
-
-    Parameters
-    ----------
-    restype : `ConfigResource.Type`
-       The resource type.
-    name : `str`
-       The resource name, which depends on the resource type. For RESOURCE_BROKER, the resource name is the broker id.
-    set_config : `dict`
-        The configuration to set/overwrite. Dictionary of str, str.
-    """
-
-    class Type(Enum):
-        """
-        Enumerates the different types of Kafka resources.
-        """
-        UNKNOWN = RESOURCE_UNKNOWN  #: Resource type is not known or not set.
-        ANY = RESOURCE_ANY  #: Match any resource, used for lookups.
-        TOPIC = RESOURCE_TOPIC  #: Topic resource. Resource name is topic name.
-        GROUP = RESOURCE_GROUP  #: Group resource. Resource name is group.id.
-        BROKER = RESOURCE_BROKER  #: Broker resource. Resource name is broker id.
-
-    def __init__(self, restype, name,
-                 set_config=None, described_configs=None, error=None):
-        """
-        :param ConfigResource.Type restype: Resource type.
-        :param str name: The resource name, which depends on restype.
-                         For RESOURCE_BROKER, the resource name is the broker id.
-        :param dict set_config: The configuration to set/overwrite. Dictionary of str, str.
-        :param dict described_configs: For internal use only.
-        :param KafkaError error: For internal use only.
-        """
-        super(ConfigResource, self).__init__()
-
-        if name is None:
-            raise ValueError("Expected resource name to be a string")
-
-        if type(restype) == str:
-            # Allow resource type to be specified as case-insensitive string, for convenience.
-            try:
-                restype = ConfigResource.Type[restype.upper()]
-            except KeyError:
-                raise ValueError("Unknown resource type \"%s\": should be a ConfigResource.Type" % restype)
-
-        elif type(restype) == int:
-            # The C-code passes restype as an int, convert to Type.
-            restype = ConfigResource.Type(restype)
-
-        self.restype = restype
-        self.restype_int = int(self.restype.value)  # for the C code
-        self.name = name
-
-        if set_config is not None:
-            self.set_config_dict = set_config.copy()
-        else:
-            self.set_config_dict = dict()
-
-        self.configs = described_configs
-        self.error = error
-
-    def __repr__(self):
-        if self.error is not None:
-            return "ConfigResource(%s,%s,%r)" % (self.restype, self.name, self.error)
-        else:
-            return "ConfigResource(%s,%s)" % (self.restype, self.name)
-
-    def __hash__(self):
-        return hash((self.restype, self.name))
-
-    def __lt__(self, other):
-        if self.restype < other.restype:
-            return True
-        return self.name.__lt__(other.name)
-
-    def __eq__(self, other):
-        return self.restype == other.restype and self.name == other.name
-
-    def __len__(self):
-        """
-        :rtype: int
-        :returns: number of configuration entries/operations
-        """
-        return len(self.set_config_dict)
-
-    def set_config(self, name, value, overwrite=True):
-        """
-        Set/overwrite a configuration value.
-
-        When calling alter_configs, any configuration properties that are not included
-        in the request will be reverted to their default values. As a workaround, use
-        describe_configs() to retrieve the current configuration and overwrite the
-        settings you want to change.
-
-        :param str name: Configuration property name
-        :param str value: Configuration value
-        :param bool overwrite: If True, overwrite entry if it already exists (default).
-                               If False, do nothing if entry already exists.
-        """
-        if not overwrite and name in self.set_config_dict:
-            return
-        self.set_config_dict[name] = value
-
+                     NewPartitions)
 
 class AdminClient (_AdminClientImpl):
     """
@@ -275,6 +100,55 @@ class AdminClient (_AdminClientImpl):
                 fut.set_exception(e)
 
     @staticmethod
+    def _make_create_acls_result(f, futmap):
+        """
+        TODO:
+        """
+        try:
+            results = f.result()
+            futmap_values = list(futmap.values())
+            len_results = len(results)
+            len_futures = len(futmap_values)
+            if len_results != len_futures:
+                raise RuntimeError("Results length {} is different from future-map length {}".format(len_results, len_futures))
+            for i, result in enumerate(results):
+                fut = futmap_values[i]
+                if result is not None:
+                    fut.set_exception(KafkaException(result))
+                else:
+                    fut.set_result(result)
+        except Exception as e:
+            # Request-level exception, raise the same for all AclBindings
+            for resource, fut in futmap.items():
+                fut.set_exception(e)
+
+
+    @staticmethod
+    def _make_delete_acls_result(f, futmap):
+        """
+        TODO:
+        """
+        try:
+            results = f.result()
+            futmap_values = list(futmap.values())
+            len_results = len(results)
+            len_futures = len(futmap_values)
+            if len_results != len_futures:
+                raise RuntimeError("Results length {} is different from future-map length {}".format(len_results, len_futures))
+            for i, result in enumerate(results):
+                fut = futmap_values[i]
+                if isinstance(result,KafkaError):
+                    # AclBinding exception
+                    fut.set_exception(KafkaException(result))
+                else:
+                    fut.set_result(result)
+        except Exception as e:
+            # Request-level exception, raise the same for all AclBindings
+            for resource, fut in futmap.items():
+                fut.set_exception(e)
+
+
+    @staticmethod
     def _make_futures(futmap_keys, class_check, make_result_fn):
         """
         Create futures and a futuremap for the keys in futmap_keys,
@@ -283,7 +157,7 @@ class AdminClient (_AdminClientImpl):
         futmap = {}
         for key in futmap_keys:
             if class_check is not None and not isinstance(key, class_check):
-                raise ValueError("Expected list of {}".format(type(class_check)))
+                raise ValueError("Expected list of {}".format(repr(class_check)))
             futmap[key] = concurrent.futures.Future()
             if not futmap[key].set_running_or_notify_cancel():
                 raise RuntimeError("Future was cancelled prematurely")
@@ -476,6 +350,30 @@ class AdminClient (_AdminClientImpl):
                                               AdminClient._make_resource_result)
 
         super(AdminClient, self).alter_configs(resources, f, **kwargs)
+
+        return futmap
+
+    def create_acls(self, acls, **kwargs):
+        """
+        TODO:
+        """
+
+        f, futmap = AdminClient._make_futures(acls, AclBinding,
+                                              AdminClient._make_create_acls_result)
+
+        super(AdminClient, self).create_acls(acls, f, **kwargs)
+
+        return futmap
+
+    def delete_acls(self, acls, **kwargs):
+        """
+        TODO:
+        """
+
+        f, futmap = AdminClient._make_futures(acls, AclBindingFilter,
+                                              AdminClient._make_delete_acls_result)
+
+        super(AdminClient, self).delete_acls(acls, f, **kwargs)
 
         return futmap
 

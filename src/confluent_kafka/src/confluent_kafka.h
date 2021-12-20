@@ -51,19 +51,19 @@
  * Make sure to keep the MIN_RD_KAFKA_VERSION, MIN_VER_ERRSTR and #error
  * defines and strings in sync.
  */
-#define MIN_RD_KAFKA_VERSION 0x01060000
+#define MIN_RD_KAFKA_VERSION 0x010802ff
 
 #ifdef __APPLE__
-#define MIN_VER_ERRSTR "confluent-kafka-python requires librdkafka v1.6.0 or later. Install the latest version of librdkafka from Homebrew by running `brew install librdkafka` or `brew upgrade librdkafka`"
+#define MIN_VER_ERRSTR "confluent-kafka-python requires librdkafka v1.8.3 or later. Install the latest version of librdkafka from Homebrew by running `brew install librdkafka` or `brew upgrade librdkafka`"
 #else
-#define MIN_VER_ERRSTR "confluent-kafka-python requires librdkafka v1.6.0 or later. Install the latest version of librdkafka from the Confluent repositories, see http://docs.confluent.io/current/installation.html"
+#define MIN_VER_ERRSTR "confluent-kafka-python requires librdkafka v1.8.3 or later. Install the latest version of librdkafka from the Confluent repositories, see http://docs.confluent.io/current/installation.html"
 #endif
 
 #if RD_KAFKA_VERSION < MIN_RD_KAFKA_VERSION
 #ifdef __APPLE__
-#error "confluent-kafka-python requires librdkafka v1.6.0 or later. Install the latest version of librdkafka from Homebrew by running `brew install librdkafka` or `brew upgrade librdkafka`"
+#error "confluent-kafka-python requires librdkafka v1.8.3 or later. Install the latest version of librdkafka from Homebrew by running `brew install librdkafka` or `brew upgrade librdkafka`"
 #else
-#error "confluent-kafka-python requires librdkafka v1.6.0 or later. Install the latest version of librdkafka from the Confluent repositories, see http://docs.confluent.io/current/installation.html"
+#error "confluent-kafka-python requires librdkafka v1.8.3 or later. Install the latest version of librdkafka from the Confluent repositories, see http://docs.confluent.io/current/installation.html"
 #endif
 #endif
 
@@ -384,7 +384,6 @@ PyObject *list_groups (Handle *self, PyObject *args, PyObject *kwargs);
 extern const char list_topics_doc[];
 extern const char list_groups_doc[];
 
-
 #ifdef RD_KAFKA_V_HEADERS
 rd_kafka_headers_t *py_headers_to_c (PyObject *hdrs);
 PyObject *c_headers_to_py (rd_kafka_headers_t *headers);
@@ -490,6 +489,18 @@ typedef struct {
 } NewPartitions;
 
 extern PyTypeObject NewPartitionsType;
+
+
+// typedef struct {
+//         PyObject_HEAD
+//         char *name;
+// 	char *principal;
+// 	char *host;
+//         int   new_total_count;
+//         PyObject *replica_assignment;
+// } AclBinding;
+
+// extern PyTypeObject AclBindingType;
 
 int AdminTypes_Ready (void);
 void AdminTypes_AddObjects (PyObject *m);

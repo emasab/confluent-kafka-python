@@ -1,21 +1,40 @@
 #!/usr/bin/env python
 import pytest
 
-from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, ConfigResource
+from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, \
+    ConfigResource, AclBinding, ResourceType, ResourcePatternType, \
+    AclOperation, AclPermissionType
 from confluent_kafka import KafkaException, KafkaError, libversion
-import confluent_kafka
 import concurrent.futures
 
-
 def test_types():
-    ConfigResource(confluent_kafka.admin.RESOURCE_BROKER, "2")
+    ConfigResource(ResourceType.BROKER, "2")
     ConfigResource("broker", "2")
-    ConfigResource(confluent_kafka.admin.RESOURCE_GROUP, "mygroup")
-    ConfigResource(confluent_kafka.admin.RESOURCE_TOPIC, "")
+    ConfigResource(ResourceType.GROUP, "mygroup")
+    ConfigResource(ResourceType.TOPIC, "")
     with pytest.raises(ValueError):
         ConfigResource("doesnt exist", "hi")
     with pytest.raises(ValueError):
-        ConfigResource(confluent_kafka.admin.RESOURCE_TOPIC, None)
+        ConfigResource(ResourceType.TOPIC, None)
+
+@pytest.mark.skipif(libversion()[1] < 0x000b0500,
+                    reason="AdminAPI requires librdkafka >= v0.11.5")
+def test_acl_binding_type():
+    attrs = [ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
+        "User:u1","*", AclOperation.WRITE, AclPermissionType.ALLOW]
+    enum_attrs = set([0,2,5,6])
+    AclBinding(*attrs)
+    for i,_ in enumerate(attrs):
+        attrs_copy = list(attrs)
+        attrs_copy[i] = None
+        with pytest.raises(ValueError):
+            AclBinding(*attrs_copy)
+
+        if i in enum_attrs:
+            attrs_copy = list(attrs)
+            attrs_copy[i] = 0
+            with pytest.raises(ValueError):
+                AclBinding(*attrs_copy)
 
 
 @pytest.mark.skipif(libversion()[1] < 0x000b0500,
@@ -206,7 +225,7 @@ def test_describe_configs_api():
         is no broker configured. """
 
     a = AdminClient({"socket.timeout.ms": 10})
-    fs = a.describe_configs([ConfigResource(confluent_kafka.admin.RESOURCE_BROKER, "3")])
+    fs = a.describe_configs([ConfigResource(ResourceType.BROKER, "3")])
     # ignore the result
 
     with pytest.raises(Exception):
@@ -219,10 +238,10 @@ def test_describe_configs_api():
         a.describe_configs([])
 
     with pytest.raises(ValueError):
-        a.describe_configs([None, ConfigResource(confluent_kafka.admin.RESOURCE_TOPIC, "mytopic")])
+        a.describe_configs([None, ConfigResource(ResourceType.TOPIC, "mytopic")])
 
-    fs = a.describe_configs([ConfigResource(confluent_kafka.admin.RESOURCE_TOPIC, "mytopic"),
-                             ConfigResource(confluent_kafka.admin.RESOURCE_GROUP, "mygroup")],
+    fs = a.describe_configs([ConfigResource(ResourceType.TOPIC, "mytopic"),
+                             ConfigResource(ResourceType.GROUP, "mygroup")],
                             request_timeout=0.123)
     with pytest.raises(KafkaException):
         for f in concurrent.futures.as_completed(iter(fs.values())):
@@ -236,7 +255,7 @@ def test_alter_configs_api():
         is no broker configured. """
 
     a = AdminClient({"socket.timeout.ms": 10})
-    fs = a.alter_configs([ConfigResource(confluent_kafka.admin.RESOURCE_BROKER, "3",
+    fs = a.alter_configs([ConfigResource(ResourceType.BROKER, "3",
                                          set_config={"some": "config"})])
     # ignore the result
 
@@ -252,10 +271,54 @@ def test_alter_configs_api():
     fs = a.alter_configs([ConfigResource("topic", "mytopic",
                                          set_config={"set": "this",
                                                      "and": "this"}),
-                          ConfigResource(confluent_kafka.admin.RESOURCE_GROUP,
+                          ConfigResource(ResourceType.GROUP,
                                          "mygroup")],
                          request_timeout=0.123)
 
     with pytest.raises(KafkaException):
         for f in concurrent.futures.as_completed(iter(fs.values())):
             f.result(timeout=1)
+
+
+@pytest.mark.skipif(libversion()[1] < 0x000b0500,
+                    reason="AdminAPI requires librdkafka >= v0.11.5")
+def test_create_acls_api():
+    """ create_acls() tests, these wont really do anything since there is no
+        broker configured. """
+
+    a = AdminClient({"socket.timeout.ms": 10})
+
+    acl_binding1 = AclBinding(ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
+        "User:u1","*", AclOperation.WRITE, AclPermissionType.ALLOW)
+
+    f = a.create_acls([acl_binding1],
+                        request_timeout=10.0)
+    # ignore the result
+
+    with pytest.raises(Exception):
+        a.create_acls(None)
+
+    with pytest.raises(Exception):
+        a.create_acls("topic")
+
+    with pytest.raises(Exception):
+        a.create_acls(["topic"])
+
+    with pytest.raises(Exception):
+        a.create_acls([None, "topic"])
+
+    with pytest.raises(Exception):
+        a.create_acls([None, acl_binding1])
+
+    fs = a.create_acls([acl_binding1])
+    with pytest.raises(KafkaException):
+        for f in fs.values():
+            f.result(timeout=1)
+
+    with pytest.raises(ValueError):
+        a.create_acls([acl_binding1],
+                        request_timeout=-5)
+
+    with pytest.raises(TypeError):
+        a.create_acls([acl_binding1],
+                        unknown_operation="it is")
