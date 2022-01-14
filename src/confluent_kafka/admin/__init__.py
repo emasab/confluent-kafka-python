@@ -149,6 +149,13 @@ class AdminClient (_AdminClientImpl):
 
 
     @staticmethod
+    def _create_future():
+        f = concurrent.futures.Future()
+        if not f.set_running_or_notify_cancel():
+            raise RuntimeError("Future was cancelled prematurely")
+        return f
+
+    @staticmethod
     def _make_futures(futmap_keys, class_check, make_result_fn):
         """
         Create futures and a futuremap for the keys in futmap_keys,
@@ -158,18 +165,14 @@ class AdminClient (_AdminClientImpl):
         for key in futmap_keys:
             if class_check is not None and not isinstance(key, class_check):
                 raise ValueError("Expected list of {}".format(repr(class_check)))
-            futmap[key] = concurrent.futures.Future()
-            if not futmap[key].set_running_or_notify_cancel():
-                raise RuntimeError("Future was cancelled prematurely")
+            futmap_value = AdminClient._create_future()
+            futmap[key] = futmap_value
 
         # Create an internal future for the entire request,
         # this future will trigger _make_..._result() and set result/exception
         # per topic,future in futmap.
-        f = concurrent.futures.Future()
+        f = AdminClient._create_future()
         f.add_done_callback(lambda f: make_result_fn(f, futmap))
-
-        if not f.set_running_or_notify_cancel():
-            raise RuntimeError("Future was cancelled prematurely")
 
         return f, futmap
 
@@ -365,15 +368,26 @@ class AdminClient (_AdminClientImpl):
 
         return futmap
 
-    def delete_acls(self, acls, **kwargs):
+    def describe_acls(self, acl_binding_filter, **kwargs):
         """
         TODO:
         """
 
-        f, futmap = AdminClient._make_futures(acls, AclBindingFilter,
+        f = AdminClient._create_future()
+
+        super(AdminClient, self).describe_acls(acl_binding_filter, f, **kwargs)
+
+        return f
+
+    def delete_acls(self, acl_binding_filters, **kwargs):
+        """
+        TODO:
+        """
+
+        f, futmap = AdminClient._make_futures(acl_binding_filters, AclBindingFilter,
                                               AdminClient._make_delete_acls_result)
 
-        super(AdminClient, self).delete_acls(acls, f, **kwargs)
+        super(AdminClient, self).delete_acls(acl_binding_filters, f, **kwargs)
 
         return futmap
 
