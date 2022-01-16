@@ -7,6 +7,7 @@ from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, \
 from confluent_kafka import KafkaException, KafkaError, libversion
 import concurrent.futures
 
+
 def test_types():
     ConfigResource(ResourceType.BROKER, "2")
     ConfigResource("broker", "2")
@@ -17,14 +18,15 @@ def test_types():
     with pytest.raises(ValueError):
         ConfigResource(ResourceType.TOPIC, None)
 
+
 @pytest.mark.skipif(libversion()[1] < 0x000b0500,
                     reason="AdminAPI requires librdkafka >= v0.11.5")
 def test_acl_binding_type():
     attrs = [ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
-        "User:u1","*", AclOperation.WRITE, AclPermissionType.ALLOW]
-    enum_attrs = set([0,2,5,6])
+             "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW]
+    enum_attrs = set([0, 2, 5, 6])
     AclBinding(*attrs)
-    for i,_ in enumerate(attrs):
+    for i, _ in enumerate(attrs):
         attrs_copy = list(attrs)
         attrs_copy[i] = None
         with pytest.raises(ValueError):
@@ -289,10 +291,10 @@ def test_create_acls_api():
     a = AdminClient({"socket.timeout.ms": 10})
 
     acl_binding1 = AclBinding(ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
-        "User:u1","*", AclOperation.WRITE, AclPermissionType.ALLOW)
+                              "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW)
 
     f = a.create_acls([acl_binding1],
-                        request_timeout=10.0)
+                      request_timeout=10.0)
     # ignore the result
 
     with pytest.raises(Exception):
@@ -317,8 +319,8 @@ def test_create_acls_api():
 
     with pytest.raises(ValueError):
         a.create_acls([acl_binding1],
-                        request_timeout=-5)
+                      request_timeout=-5)
 
     with pytest.raises(TypeError):
         a.create_acls([acl_binding1],
-                        unknown_operation="it is")
+                      unknown_operation="it is")

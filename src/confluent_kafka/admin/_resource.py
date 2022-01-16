@@ -10,6 +10,7 @@ from ..cimpl import (RESOURCE_UNKNOWN,
                      RESOURCE_PATTERN_LITERAL,
                      RESOURCE_PATTERN_PREFIXED)
 
+
 class ResourceType(Enum):
     """
     Enumerates the different types of Kafka resources.
@@ -24,6 +25,7 @@ class ResourceType(Enum):
         if self.__class__ != other.__class__:
             return NotImplemented
         return self.value < other.value
+
 
 class ResourcePatternType(Enum):
     """

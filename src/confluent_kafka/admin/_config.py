@@ -8,6 +8,7 @@ from ..cimpl import (CONFIG_SOURCE_UNKNOWN_CONFIG,
                      CONFIG_SOURCE_DEFAULT_CONFIG)
 from ._resource import ResourceType
 
+
 class ConfigSource(Enum):
     """
     Enumerates the different sources of configuration properties.
