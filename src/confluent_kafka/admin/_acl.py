@@ -172,11 +172,11 @@ class AclBinding(object):
                                      "principal", "host", "operation", "permission_type"],
                       string_args=["name", "principal", "host"],
                       forbidden_enums={
-                          "restype": [ResourceType.UNKNOWN, ResourceType.ANY],
-                          "resource_pattern_type": [ResourcePatternType.UNKNOWN, ResourcePatternType.ANY,
+                          "restype": [ResourceType.ANY],
+                          "resource_pattern_type": [ResourcePatternType.ANY,
                                                     ResourcePatternType.MATCH],
-                          "operation": [AclOperation.UNKNOWN, AclOperation.ANY],
-                          "permission_type": [AclPermissionType.UNKNOWN, AclPermissionType.ANY]
+                          "operation": [AclOperation.ANY],
+                          "permission_type": [AclPermissionType.ANY]
                       }
                       ):
         vars = locals()

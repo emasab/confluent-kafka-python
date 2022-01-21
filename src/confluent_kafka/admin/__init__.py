@@ -243,13 +243,13 @@ class AdminClient (_AdminClientImpl):
 
         return futmap
 
-    def list_topics(self, **kwargs):
+    def list_topics(self, *args, **kwargs):
 
-        return super(AdminClient, self).list_topics(**kwargs)
+        return super(AdminClient, self).list_topics(*args, **kwargs)
 
-    def list_groups(self, **kwargs):
+    def list_groups(self, *args, **kwargs):
 
-        return super(AdminClient, self).list_groups(**kwargs)
+        return super(AdminClient, self).list_groups(*args, **kwargs)
 
     def create_partitions(self, new_partitions, **kwargs):
         """

@@ -2,7 +2,7 @@
 import pytest
 
 from confluent_kafka.admin import AdminClient, NewTopic, NewPartitions, \
-    ConfigResource, AclBinding, ResourceType, ResourcePatternType, \
+    ConfigResource, AclBinding, AclBindingFilter, ResourceType, ResourcePatternType, \
     AclOperation, AclPermissionType
 from confluent_kafka import KafkaException, KafkaError, libversion
 import concurrent.futures
@@ -24,19 +24,53 @@ def test_types():
 def test_acl_binding_type():
     attrs = [ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
              "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW]
-    enum_attrs = set([0, 2, 5, 6])
+
+    attrs_nullable_acl_binding_filter = [1, 3, 4]
+
+    # at first it creates correctly
     AclBinding(*attrs)
     for i, _ in enumerate(attrs):
+
+        # no attribute is nullable
         attrs_copy = list(attrs)
         attrs_copy[i] = None
         with pytest.raises(ValueError):
             AclBinding(*attrs_copy)
 
-        if i in enum_attrs:
-            attrs_copy = list(attrs)
-            attrs_copy[i] = 0
+        # string attributes of AclBindingFilter are nullable
+        if i in attrs_nullable_acl_binding_filter:
+            AclBindingFilter(*attrs_copy)
+        else:
             with pytest.raises(ValueError):
-                AclBinding(*attrs_copy)
+                AclBindingFilter(*attrs_copy)
+
+    for (attr_num, attr_value) in [
+        (0, ResourceType.ANY),
+        (2, ResourcePatternType.ANY),
+        (2, ResourcePatternType.MATCH),
+        (5, AclOperation.ANY),
+        (6, AclPermissionType.ANY),
+    ]:
+        attrs_copy = list(attrs)
+        attrs_copy[attr_num] = attr_value
+        # forbidden enums in AclBinding
+        with pytest.raises(ValueError):
+            AclBinding(*attrs_copy)
+
+        # AclBindingFilter can hold all the enum values
+        AclBindingFilter(*attrs_copy)
+
+    # UNKNOWN values are not forbidden, for received values
+    for (attr_num, attr_value) in [
+        (0, ResourceType.UNKNOWN),
+        (2, ResourcePatternType.UNKNOWN),
+        (2, ResourcePatternType.UNKNOWN),
+        (5, AclOperation.UNKNOWN),
+        (6, AclPermissionType.UNKNOWN),
+    ]:
+        attrs_copy = list(attrs)
+        attrs_copy[attr_num] = attr_value
+        AclBinding(*attrs_copy)
 
 
 @pytest.mark.skipif(libversion()[1] < 0x000b0500,
