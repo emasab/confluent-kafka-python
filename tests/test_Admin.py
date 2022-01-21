@@ -324,8 +324,10 @@ def test_create_acls_api():
 
     a = AdminClient({"socket.timeout.ms": 10})
 
-    acl_binding1 = AclBinding(ResourceType.TOPIC, "topic", ResourcePatternType.LITERAL,
+    acl_binding1 = AclBinding(ResourceType.TOPIC, "topic1", ResourcePatternType.LITERAL,
                               "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW)
+    acl_binding2 = AclBinding(ResourceType.TOPIC, "topic2", ResourcePatternType.LITERAL,
+                              "User:u2", "*", AclOperation.READ, AclPermissionType.DENY)
 
     f = a.create_acls([acl_binding1],
                       request_timeout=10.0)
@@ -346,10 +348,17 @@ def test_create_acls_api():
     with pytest.raises(Exception):
         a.create_acls([None, acl_binding1])
 
-    fs = a.create_acls([acl_binding1])
+    fs = a.create_acls([acl_binding1, acl_binding2])
     with pytest.raises(KafkaException):
         for f in fs.values():
             f.result(timeout=1)
+    
+    fs = a.create_acls([acl_binding1, acl_binding2],
+                        request_timeout=0.5)
+    for f in concurrent.futures.as_completed(iter(fs.values())):
+        e = f.exception(timeout=1)
+        assert isinstance(e, KafkaException)
+        assert e.args[0].code() == KafkaError._TIMED_OUT
 
     with pytest.raises(ValueError):
         a.create_acls([acl_binding1],
@@ -358,3 +367,92 @@ def test_create_acls_api():
     with pytest.raises(TypeError):
         a.create_acls([acl_binding1],
                       unknown_operation="it is")
+
+
+@pytest.mark.skipif(libversion()[1] < 0x000b0500,
+                    reason="AdminAPI requires librdkafka >= v0.11.5")
+def test_delete_acls_api():
+    """ delete_acls() tests, these wont really do anything since there is no
+        broker configured. """
+
+    a = AdminClient({"socket.timeout.ms": 10})
+
+    acl_binding_filter1 = AclBindingFilter(ResourceType.ANY,  None, ResourcePatternType.ANY,
+                              None, None, AclOperation.ANY, AclPermissionType.ANY)
+    acl_binding_filter2 = AclBindingFilter(ResourceType.ANY,  "topic2", ResourcePatternType.MATCH,
+                              None, "*", AclOperation.WRITE, AclPermissionType.ALLOW)
+
+    fs = a.delete_acls([acl_binding_filter1])
+    # ignore the result
+
+    with pytest.raises(Exception):
+        a.delete_acls(None)
+
+    with pytest.raises(Exception):
+        a.delete_acls([])
+
+    with pytest.raises(ValueError):
+        a.delete_topics([None, acl_binding_filter1])
+
+    with pytest.raises(ValueError):
+        a.delete_topics([None, acl_binding_filter1])
+
+    fs = a.delete_acls([acl_binding_filter1, acl_binding_filter2])
+    with pytest.raises(KafkaException):
+        for f in concurrent.futures.as_completed(iter(fs.values())):
+            f.result(timeout=1)
+
+    fs = a.delete_acls([acl_binding_filter1, acl_binding_filter2],
+                        request_timeout=0.5)
+    for f in concurrent.futures.as_completed(iter(fs.values())):
+        e = f.exception(timeout=1)
+        assert isinstance(e, KafkaException)
+        assert e.args[0].code() == KafkaError._TIMED_OUT
+
+    with pytest.raises(ValueError):
+        a.create_acls([acl_binding_filter1],
+                      request_timeout=-5)
+
+    with pytest.raises(TypeError):
+        a.delete_acls([acl_binding_filter1],
+                      unknown_operation="it is")
+
+@pytest.mark.skipif(libversion()[1] < 0x000b0500,
+                    reason="AdminAPI requires librdkafka >= v0.11.5")
+def test_describe_acls_api():
+    """ describe_acls() tests, these wont really do anything since there is no
+        broker configured. """
+
+    a = AdminClient({"socket.timeout.ms": 10})
+
+    acl_binding_filter1 = AclBindingFilter(ResourceType.ANY,  None, ResourcePatternType.ANY,
+                              None, None, AclOperation.ANY, AclPermissionType.ANY)
+    acl_binding1 = AclBinding(ResourceType.TOPIC, "topic1", ResourcePatternType.LITERAL,
+                              "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW)
+
+    fs = a.describe_acls(acl_binding_filter1)
+    # ignore the result
+
+    with pytest.raises(Exception):
+        a.describe_acls(None)
+    
+    with pytest.raises(ValueError):
+        a.describe_acls(acl_binding1)
+
+    f = a.describe_acls(acl_binding_filter1)
+    with pytest.raises(KafkaException):
+        f.result(timeout=1)
+
+    f = a.describe_acls(acl_binding_filter1,
+                        request_timeout=0.5)
+    e = f.exception(timeout=1)
+    assert isinstance(e, KafkaException)
+    assert e.args[0].code() == KafkaError._TIMED_OUT
+
+    with pytest.raises(ValueError):
+        a.describe_acls(acl_binding_filter1,
+                        request_timeout=-5)
+
+    with pytest.raises(TypeError):
+        a.describe_acls(acl_binding_filter1,
+                        unknown_operation="it is")
