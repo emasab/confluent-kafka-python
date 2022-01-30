@@ -16,7 +16,18 @@ from ..cimpl import (KafkaException,  # noqa
                      KafkaError,
                      _AdminClientImpl,
                      NewTopic,
-                     NewPartitions)
+                     NewPartitions,
+                     CONFIG_SOURCE_UNKNOWN_CONFIG,
+                     CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG,
+                     CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG,
+                     CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG,
+                     CONFIG_SOURCE_STATIC_BROKER_CONFIG,
+                     CONFIG_SOURCE_DEFAULT_CONFIG,
+                     RESOURCE_UNKNOWN,
+                     RESOURCE_ANY,
+                     RESOURCE_TOPIC,
+                     RESOURCE_GROUP,
+                     RESOURCE_BROKER)
 
 
 class AdminClient (_AdminClientImpl):

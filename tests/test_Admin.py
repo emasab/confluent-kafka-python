@@ -352,9 +352,9 @@ def test_create_acls_api():
     with pytest.raises(KafkaException):
         for f in fs.values():
             f.result(timeout=1)
-    
+
     fs = a.create_acls([acl_binding1, acl_binding2],
-                        request_timeout=0.5)
+                       request_timeout=0.5)
     for f in concurrent.futures.as_completed(iter(fs.values())):
         e = f.exception(timeout=1)
         assert isinstance(e, KafkaException)
@@ -378,9 +378,9 @@ def test_delete_acls_api():
     a = AdminClient({"socket.timeout.ms": 10})
 
     acl_binding_filter1 = AclBindingFilter(ResourceType.ANY,  None, ResourcePatternType.ANY,
-                              None, None, AclOperation.ANY, AclPermissionType.ANY)
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
     acl_binding_filter2 = AclBindingFilter(ResourceType.ANY,  "topic2", ResourcePatternType.MATCH,
-                              None, "*", AclOperation.WRITE, AclPermissionType.ALLOW)
+                                           None, "*", AclOperation.WRITE, AclPermissionType.ALLOW)
 
     fs = a.delete_acls([acl_binding_filter1])
     # ignore the result
@@ -403,7 +403,7 @@ def test_delete_acls_api():
             f.result(timeout=1)
 
     fs = a.delete_acls([acl_binding_filter1, acl_binding_filter2],
-                        request_timeout=0.5)
+                       request_timeout=0.5)
     for f in concurrent.futures.as_completed(iter(fs.values())):
         e = f.exception(timeout=1)
         assert isinstance(e, KafkaException)
@@ -417,6 +417,7 @@ def test_delete_acls_api():
         a.delete_acls([acl_binding_filter1],
                       unknown_operation="it is")
 
+
 @pytest.mark.skipif(libversion()[1] < 0x000b0500,
                     reason="AdminAPI requires librdkafka >= v0.11.5")
 def test_describe_acls_api():
@@ -426,16 +427,16 @@ def test_describe_acls_api():
     a = AdminClient({"socket.timeout.ms": 10})
 
     acl_binding_filter1 = AclBindingFilter(ResourceType.ANY,  None, ResourcePatternType.ANY,
-                              None, None, AclOperation.ANY, AclPermissionType.ANY)
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
     acl_binding1 = AclBinding(ResourceType.TOPIC, "topic1", ResourcePatternType.LITERAL,
                               "User:u1", "*", AclOperation.WRITE, AclPermissionType.ALLOW)
 
-    fs = a.describe_acls(acl_binding_filter1)
+    a.describe_acls(acl_binding_filter1)
     # ignore the result
 
     with pytest.raises(Exception):
         a.describe_acls(None)
-    
+
     with pytest.raises(ValueError):
         a.describe_acls(acl_binding1)
 

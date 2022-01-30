@@ -21,7 +21,9 @@
 """ Test script for confluent_kafka module """
 
 import confluent_kafka
-from confluent_kafka import admin
+from confluent_kafka.admin import (AdminClient, NewTopic, NewPartitions, ConfigResource,
+                                   AclBinding, AclBindingFilter, ResourceType,
+                                   ResourcePatternType, AclOperation, AclPermissionType)
 import os
 import time
 import uuid
@@ -812,10 +814,10 @@ def verify_avro_basic_auth(mode_conf):
     }
 
     base_conf = {
-            'bootstrap.servers': bootstrap_servers,
-            'error_cb': error_cb,
-            'schema.registry.url': schema_registry_url
-            }
+        'bootstrap.servers': bootstrap_servers,
+        'error_cb': error_cb,
+        'schema.registry.url': schema_registry_url
+    }
 
     consumer_conf = dict({'group.id': generate_group_id(),
                           'session.timeout.ms': 6000,
@@ -1067,10 +1069,74 @@ def verify_topic_metadata(client, exp_topics):
     raise Exception("Timed out waiting for topics {} in metadata".format(exp_topics))
 
 
+def verify_admin_acls(admin_client,
+                      topic,
+                      group):
+
+    #
+    # Add three ACLs
+    #
+    acl_binding_1 = AclBinding(ResourceType.TOPIC, topic, ResourcePatternType.LITERAL,
+                               "User:test-user-1", "*", AclOperation.READ, AclPermissionType.ALLOW)
+    acl_binding_2 = AclBinding(ResourceType.TOPIC, topic, ResourcePatternType.PREFIXED,
+                               "User:test-user-2", "*", AclOperation.WRITE, AclPermissionType.DENY)
+    acl_binding_3 = AclBinding(ResourceType.GROUP, group, ResourcePatternType.PREFIXED,
+                               "User:test-user-2", "*", AclOperation.ALL, AclPermissionType.ALLOW)
+
+    fs = admin_client.create_acls([acl_binding_1, acl_binding_2, acl_binding_3])
+    for acl_binding, f in fs.items():
+        f.result()  # trigger exception if there was an error
+
+    acl_binding_filter1 = AclBindingFilter(ResourceType.ANY, None, ResourcePatternType.ANY,
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
+    acl_binding_filter2 = AclBindingFilter(ResourceType.ANY, None, ResourcePatternType.PREFIXED,
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
+    acl_binding_filter3 = AclBindingFilter(ResourceType.TOPIC, None, ResourcePatternType.ANY,
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
+    acl_binding_filter4 = AclBindingFilter(ResourceType.GROUP, None, ResourcePatternType.ANY,
+                                           None, None, AclOperation.ANY, AclPermissionType.ANY)
+
+    expected_acl_bindings = [acl_binding_1, acl_binding_2, acl_binding_3]
+    acl_bindings = admin_client.describe_acls(acl_binding_filter1).result()
+    assert sorted(acl_bindings) == expected_acl_bindings, \
+        "ACL bindings don't match, actual: {} expected: {}".format(acl_bindings,
+                                                                   expected_acl_bindings)
+
+    #
+    # Delete the ACLs with PREFIXED
+    #
+    expected_acl_bindings = [acl_binding_2, acl_binding_3]
+    fs = admin_client.delete_acls([acl_binding_filter2])
+    deleted_acl_bindings = sorted(fs[acl_binding_filter2].result())
+    assert deleted_acl_bindings == expected_acl_bindings, \
+        "Deleted ACL bindings don't match, actual {} expected {}".format(deleted_acl_bindings,
+                                                                         expected_acl_bindings)
+
+    #
+    # Delete the ACLs with TOPIC and GROUP
+    #
+    expected_acl_bindings = [[acl_binding_1], []]
+    delete_acl_binding_filters = [acl_binding_filter3, acl_binding_filter4]
+    fs = admin_client.delete_acls(delete_acl_binding_filters)
+    for acl_binding, expected in zip(delete_acl_binding_filters, expected_acl_bindings):
+        deleted_acl_bindings = sorted(fs[acl_binding].result())
+        assert deleted_acl_bindings == expected, \
+            "Deleted ACL bindings don't match, actual {} expected {}".format(deleted_acl_bindings,
+                                                                             expected)
+    #
+    # All the ACLs should have been deleted
+    #
+    expected_acl_bindings = []
+    acl_bindings = admin_client.describe_acls(acl_binding_filter1).result()
+    assert acl_bindings == expected_acl_bindings, \
+        "ACL bindings don't match, actual: {} expected: {}".format(acl_bindings,
+                                                                   expected_acl_bindings)
+
+
 def verify_admin():
     """ Verify Admin API """
 
-    a = admin.AdminClient({'bootstrap.servers': bootstrap_servers})
+    a = AdminClient({'bootstrap.servers': bootstrap_servers})
     our_topic = topic + '_admin_' + str(uuid.uuid4())
     num_partitions = 2
 
@@ -1081,10 +1147,10 @@ def verify_admin():
     # Second iteration: create topic.
     #
     for validate in (True, False):
-        fs = a.create_topics([admin.NewTopic(our_topic,
-                                             num_partitions=num_partitions,
-                                             config=topic_config,
-                                             replication_factor=1)],
+        fs = a.create_topics([NewTopic(our_topic,
+                                       num_partitions=num_partitions,
+                                       config=topic_config,
+                                       replication_factor=1)],
                              validate_only=validate,
                              operation_timeout=10.0)
 
@@ -1100,8 +1166,8 @@ def verify_admin():
     # Increase the partition count
     #
     num_partitions += 3
-    fs = a.create_partitions([admin.NewPartitions(our_topic,
-                                                  new_total_count=num_partitions)],
+    fs = a.create_partitions([NewPartitions(our_topic,
+                                            new_total_count=num_partitions)],
                              operation_timeout=10.0)
 
     for topic2, f in fs.items():
@@ -1182,7 +1248,7 @@ def verify_admin():
     #
     # Get current topic config
     #
-    resource = admin.ConfigResource(admin.RESOURCE_TOPIC, our_topic)
+    resource = ConfigResource(ResourceType.TOPIC, our_topic)
     fs = a.describe_configs([resource])
     configs = fs[resource].result()  # will raise exception on failure
 
@@ -1209,6 +1275,9 @@ def verify_admin():
 
     # Verify config matches our expectations
     verify_config(topic_config, configs)
+
+    # Verify ACL operations
+    verify_admin_acls(a, our_topic, group1)
 
     #
     # Delete the topic

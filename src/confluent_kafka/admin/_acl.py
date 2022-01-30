@@ -20,6 +20,13 @@ from ..cimpl import (ACL_OPERATION_UNKNOWN,
 
 from ._resource import ResourceType, ResourcePatternType
 
+try:
+    # py2
+    unicode
+except NameError:
+    # py3
+    unicode = str
+
 
 class AclOperation(Enum):
     """
@@ -133,7 +140,7 @@ class AclBinding(object):
     def _check_is_string(self, vars, vars_to_check):
         for param in vars_to_check:
             param_value = vars[param]
-            if param_value is not None and not type(param_value) is str:
+            if param_value is not None and not type(param_value) in [unicode, str]:
                 raise ValueError("Expected %s to be a string" % (param,))
 
     def _convert_to_enum(self, val, enum_clazz):
