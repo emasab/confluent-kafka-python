@@ -116,7 +116,8 @@ class AdminClient (_AdminClientImpl):
     @staticmethod
     def _make_create_acls_result(f, futmap):
         """
-        TODO:
+        Map create acl binding results to corresponding futures in futmap.
+        The result value of each (successful) future is None.
         """
         try:
             results = f.result()
@@ -140,7 +141,8 @@ class AdminClient (_AdminClientImpl):
     @staticmethod
     def _make_delete_acls_result(f, futmap):
         """
-        TODO:
+        Map delete acl binding results to corresponding futures in futmap.
+        The result value of each (successful) future is the list of deleted AclBindings.
         """
         try:
             results = f.result()
@@ -153,12 +155,11 @@ class AdminClient (_AdminClientImpl):
             for i, result in enumerate(results):
                 fut = futmap_values[i]
                 if isinstance(result, KafkaError):
-                    # AclBinding exception
                     fut.set_exception(KafkaException(result))
                 else:
                     fut.set_result(result)
         except Exception as e:
-            # Request-level exception, raise the same for all AclBindings
+            # Request-level exception, raise the same for all the AclBindingFilters
             for resource, fut in futmap.items():
                 fut.set_exception(e)
 
@@ -372,7 +373,22 @@ class AdminClient (_AdminClientImpl):
 
     def create_acls(self, acls, **kwargs):
         """
-        TODO:
+        Create one or more acl bindings.
+
+        :param list(AclBinding) acls: A list of acl binding specifications (AclBinding)
+                         that must be created.
+        :param float request_timeout: The overall request timeout in seconds,
+                  including broker lookup, request transmission, operation time
+                  on broker, and response. Default: `socket.timeout.ms*1000.0`
+
+        :returns: A dict of futures for each acl binding, keyed by the AclBinding object.
+                  The future result() method returns None.
+
+        :rtype: dict(<AclBinding, future>)
+
+        :raises KafkaException: Operation failed locally or on broker.
+        :raises TypeException: Invalid input.
+        :raises ValueException: Invalid input.
         """
 
         f, futmap = AdminClient._make_futures(acls, AclBinding,
@@ -384,7 +400,22 @@ class AdminClient (_AdminClientImpl):
 
     def describe_acls(self, acl_binding_filter, **kwargs):
         """
-        TODO:
+        Get acl bindings matching an acl binding filter.
+
+        :param AclBindingFilter acl_binding_filter: a filter with attributes that
+                  must correspond, None to match any string or enums containing ANY to match
+                  any value or MATCH to perform pattern matching with the resource name
+        :param float request_timeout: The overall request timeout in seconds,
+                  including broker lookup, request transmission, operation time
+                  on broker, and response. Default: `socket.timeout.ms*1000.0`
+
+        :returns: A future returning a list(AclBinding) as result
+
+        :rtype: future
+
+        :raises KafkaException: Operation failed locally or on broker.
+        :raises TypeException: Invalid input.
+        :raises ValueException: Invalid input.
         """
 
         f = AdminClient._create_future()
@@ -395,7 +426,24 @@ class AdminClient (_AdminClientImpl):
 
     def delete_acls(self, acl_binding_filters, **kwargs):
         """
-        TODO:
+        Delete acl bindings matching one or more acl binding filters.
+
+        :param list(AclBindingFilter) acl_binding_filters: a list of acl binding filters
+                  for acls to delete, with attributes that must correspond, None to match
+                  any string or enums containing ANY to match any value or MATCH to perform
+                  pattern matching with the resource name
+        :param float request_timeout: The overall request timeout in seconds,
+                  including broker lookup, request transmission, operation time
+                  on broker, and response. Default: `socket.timeout.ms*1000.0`
+
+        :returns: A dict of futures for each acl binding filter, keyed by the AclBindingFilter object.
+                  The future result() method returns a list of AclBinding.
+
+        :rtype: dict(<AclBindingFilter, future>)
+
+        :raises KafkaException: Operation failed locally or on broker.
+        :raises TypeException: Invalid input.
+        :raises ValueException: Invalid input.
         """
 
         f, futmap = AdminClient._make_futures(acl_binding_filters, AclBindingFilter,

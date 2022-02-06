@@ -21,11 +21,9 @@ from ..cimpl import (ACL_OPERATION_UNKNOWN,
 from ._resource import ResourceType, ResourcePatternType
 
 try:
-    # py2
-    unicode
+    string_type = basestring  # noqa
 except NameError:
-    # py3
-    unicode = str
+    string_type = str
 
 
 class AclOperation(Enum):
@@ -70,9 +68,8 @@ class AclPermissionType(Enum):
 @functools.total_ordering
 class AclBinding(object):
     """
-    Represents an AclBinding that specifics the operation and permission type for a specific principal
-    over a set of resources of the same type. Used by
-    TODO:
+    Represents an acl binding that specify the operation and permission type for a specific principal
+    over one or more resources of the same type. Used by create_acls, returned by describe_acls and delete_acls.
 
     Parameters
     ----------
@@ -81,15 +78,15 @@ class AclBinding(object):
     name : `str`
         The resource name, which depends on the resource type. For RESOURCE_BROKER, the resource name is the broker id.
     resource_pattern_type : `ResourcePatternType`
-        The resource pattern, relative to the name
+        The resource pattern, relative to the name.
     principal : `str`
-        The principal this AclBinding refers to
+        The principal this AclBinding refers to.
     host : `str`
-        The host that the call is allowed to come from
+        The host that the call is allowed to come from.
     operation: `AclOperation`
-        The operation/s specified by this binding
+        The operation/s specified by this binding.
     permission_type: `AclPermissionType`
-        The permission type for the specified operation
+        The permission type for the specified operation.
     """
 
     def __init__(self, restype, name,
@@ -99,11 +96,11 @@ class AclBinding(object):
         :param ResourceType restype: Resource type.
         :param str name: The resource name, which depends on restype.
                          For RESOURCE_BROKER, the resource name is the broker id.
-        :param ResourcePatternType resource_pattern_type: The resource pattern, relative to the name
-        :param str principal: The principal this AclBinding refers to
-        :param str host: The host that the call is allowed to come from
-        :param AclOperation operation: The operation/s specified by this binding
-        :param AclPermissionType The permission type for the specified operation
+        :param ResourcePatternType resource_pattern_type: The resource pattern, relative to the name.
+        :param str principal: The principal this AclBinding refers to.
+        :param str host: The host that the call is allowed to come from.
+        :param AclOperation operation: The operation/s specified by this binding.
+        :param AclPermissionType The permission type for the specified operation.
         :param KafkaError error: For internal use only.
         """
         super(AclBinding, self).__init__()
@@ -140,7 +137,7 @@ class AclBinding(object):
     def _check_is_string(self, vars, vars_to_check):
         for param in vars_to_check:
             param_value = vars[param]
-            if param_value is not None and not type(param_value) in [unicode, str]:
+            if param_value is not None and not isinstance(param_value, string_type):
                 raise ValueError("Expected %s to be a string" % (param,))
 
     def _convert_to_enum(self, val, enum_clazz):
@@ -231,19 +228,43 @@ class AclBinding(object):
 
 
 class AclBindingFilter(AclBinding):
+    """
+    Represents an acl binding filter used to return a list of acl bindings matching some or all of its attributes.
+    Used by describe_acls and delete_acls.
+
+    Parameters
+    ----------
+    restype : `ResourceType`
+        The resource type, or ResourceType.ANY to match any value.
+    name : `str`
+        The resource name to match.
+        None matches any value.
+    resource_pattern_type : `ResourcePatternType`
+        The resource pattern, ResourcePatternType.ANY to match any value or
+        ResourcePatternType.MATCH to perform pattern matching.
+    principal : `str`
+        The principal to match, or None to match any value.
+    host : `str`
+        The host to match, or None to match any value.
+    operation: `AclOperation`
+        The operation to match or AclOperation.ANY to match any value.
+    permission_type: `AclPermissionType`
+        The permission type to match or AclPermissionType.ANY to match any value.
+    """
 
     def __init__(self, restype, name,
                  resource_pattern_type, principal, host,
                  operation, permission_type, error=None):
         """
-        :param ResourceType restype: Resource type.
-        :param str name: The resource name, which depends on restype.
-                         For RESOURCE_BROKER, the resource name is the broker id.
-        :param ResourcePatternType resource_pattern_type: The resource pattern, relative to the name
-        :param str principal: The principal this AclBinding refers to
-        :param str host: The host that the call is allowed to come from
-        :param AclOperation operation: The operation/s specified by this binding
-        :param AclPermissionType The permission type for the specified operation
+        :param ResourceType restype: The resource type, or ResourceType.ANY to match any value.
+        :param str name: The resource name to match.
+                        None matches any value.
+        :param ResourcePatternType resource_pattern_type: The resource pattern, ResourcePatternType.ANY
+                        to match any value or ResourcePatternType.MATCH to perform pattern matching.
+        :param str principal: The principal to match, or None to match any value.
+        :param str host: The host to match, or None to match any value.
+        :param AclOperation operation: The operation to match or AclOperation.ANY to match any value.
+        :param AclPermissionType The permission type to match or AclPermissionType.ANY to match any value.
         :param KafkaError error: For internal use only.
         """
         super(AclBinding, self).__init__()

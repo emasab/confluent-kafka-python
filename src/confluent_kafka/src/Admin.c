@@ -977,7 +977,7 @@ static PyObject *Admin_alter_configs (Handle *self, PyObject *args,
 }
 
 /**
- * TODO:
+ * @brief Convert py AclBinding to C
  */
 static rd_kafka_AclBinding_t*
 Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
@@ -1002,7 +1002,7 @@ Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
 }
 
 /**
- * TODO:
+ * @brief Convert py AclBindingFilter to C
  */
 static rd_kafka_AclBindingFilter_t*
 Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
@@ -1036,7 +1036,7 @@ Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
 }
 
 /**
- * TODO:
+ * @brief Convert C AclBinding to py
  */
 static PyObject *
 Admin_c_AclBinding_to_py (const rd_kafka_AclBinding_t *c_acl_binding) {
@@ -1268,11 +1268,12 @@ err:
 
 
 static const char Admin_create_acls_doc[] = PyDoc_STR(
-        ".. py:function:: create_acls(...)\n"
+        ".. py:function:: create_acls(acl_bindings, future, [request_timeout])\n"
         "\n"
-        " TODO:"
+        "  Create a list of ACL bindings.\n"
         "\n"
-        "  TODO:");
+        "  This method should not be used directly, use confluent_kafka.AdminClient.create_acls()\n"
+);
 
 
 /**
@@ -1370,11 +1371,12 @@ err:
 
 
 static const char Admin_describe_acls_doc[] = PyDoc_STR(
-        ".. py:function:: describe_acls(...)\n"
+        ".. py:function:: describe_acls(acl_binding_filter, future, [request_timeout])\n"
         "\n"
-        " TODO:"
+        "  Get a list of ACL bindings matching an ACL binding filter.\n"
         "\n"
-        "  TODO:");
+        "  This method should not be used directly, use confluent_kafka.AdminClient.describe_acls()\n"
+);
 
 /**
  * @brief delete_acls
@@ -1491,11 +1493,12 @@ err:
 
 
 static const char Admin_delete_acls_doc[] = PyDoc_STR(
-        ".. py:function:: delete_acls(...)\n"
+        ".. py:function:: delete_acls(acl_binding_filters, future, [request_timeout])\n"
         "\n"
-        " TODO:"
+        "  Deletes ACL bindings matching one or more ACL binding filter.\n"
         "\n"
-        "  TODO:");
+        "  This method should not be used directly, use confluent_kafka.AdminClient.delete_acls()\n"
+);
 
 
 /**
