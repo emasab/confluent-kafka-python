@@ -1,5 +1,10 @@
 # Confluent's Python client for Apache Kafka
 
+## v1.9.0
+
+librdkafka v1.9.0 is a feature release:
+
+ * Added KIP-140 Admin API ACL support (by @emasab)
 ## v1.8.3
 
 v1.8.3 is a maintenance release with the following fixes:
@@ -10,8 +15,6 @@ v1.8.3 is a maintenance release with the following fixes:
    contained text that had it backwards.
    The warning is now only emitted when `use.deprecated.format` is set
    to the old legacy encoding (`True`). #1265
-
-
 
 ## v1.8.2
 
