@@ -984,7 +984,8 @@ Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
                         char *errstr,
                         size_t errstr_size) {
         int restype, resource_pattern_type, operation, permission_type;
-        char *resname, *principal, *host;
+        char *resname = NULL, *principal = NULL, *host = NULL;
+        rd_kafka_AclBinding_t* ret = NULL;
 
         PyObject *py_obj = (PyObject *) py_obj_arg;
         if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 0)
@@ -994,11 +995,14 @@ Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
             && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 0)
             && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 0)
             && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 0)) {
-                    return rd_kafka_AclBinding_new(restype, resname, \
+                    ret = rd_kafka_AclBinding_new(restype, resname, \
                         resource_pattern_type, principal, host, \
                         operation, permission_type, errstr, errstr_size);
         }
-        return NULL;
+        if (resname) free(resname);
+        if (principal) free(principal);
+        if (host) free(host);
+        return ret;
 }
 
 /**
@@ -1012,6 +1016,7 @@ Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
         char *resname = NULL, *principal = NULL, *host = NULL;
         PyObject *py_name = NULL, *py_principal = NULL, *py_host = NULL;
         PyObject *py_obj = (PyObject *) py_obj_arg;
+        rd_kafka_AclBindingFilter_t* ret = NULL;
 
 
         cfl_PyObject_GetAttr(py_obj, "name", &py_name, NULL, 1);
@@ -1028,11 +1033,14 @@ Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
             && (host_is_none || cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1))
             && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 1)
             && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 1)) {
-                    return rd_kafka_AclBindingFilter_new(restype, resname, \
+                    ret = rd_kafka_AclBindingFilter_new(restype, resname, \
                         resource_pattern_type, principal, host, \
                         operation, permission_type, errstr, errstr_size);
         }
-        return NULL;
+        if (resname) free(resname);
+        if (principal) free(principal);
+        if (host) free(host);
+        return ret;
 }
 
 /**
