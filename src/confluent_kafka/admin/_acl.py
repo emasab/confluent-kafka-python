@@ -91,7 +91,7 @@ class AclBinding(object):
 
     def __init__(self, restype, name,
                  resource_pattern_type, principal, host,
-                 operation, permission_type, error=None):
+                 operation, permission_type):
         """
         :param ResourceType restype: Resource type.
         :param str name: The resource name, which depends on restype.
@@ -101,42 +101,42 @@ class AclBinding(object):
         :param str host: The host that the call is allowed to come from.
         :param AclOperation operation: The operation/s specified by this binding.
         :param AclPermissionType The permission type for the specified operation.
-        :param KafkaError error: For internal use only.
         """
         super(AclBinding, self).__init__()
 
-        (restype, name, resource_pattern_type, principal, host,
-         operation, permission_type) = self._convert_args(restype, name,
-                                                          resource_pattern_type, principal,
-                                                          host, operation, permission_type)
-
         self._set_attrs(restype, name, resource_pattern_type, principal, host,
-                        operation, permission_type, error)
+                        operation, permission_type)
+
+        self._convert_args()
+
+        self._set_c_attrs()
 
     def _set_attrs(self, restype, name,
                    resource_pattern_type, principal, host,
-                   operation, permission_type, error):
+                   operation, permission_type):
         self.restype = restype
-        self.restype_int = int(self.restype.value)  # for the C code
         self.name = name
         self.resource_pattern_type = resource_pattern_type
-        self.resource_pattern_type_int = int(self.resource_pattern_type.value)  # for the C code
         self.principal = principal
         self.host = host
         self.operation = operation
-        self.operation_int = int(self.operation.value)  # for the C code
         self.permission_type = permission_type
-        self.permission_type_int = int(self.permission_type.value)  # for the C code
-        self.error = error
 
-    def _check_not_none(self, vars, vars_to_check):
+    def _set_c_attrs(self):
+        # for the C code
+        self.restype_int = int(self.restype.value)
+        self.resource_pattern_type_int = int(self.resource_pattern_type.value)
+        self.operation_int = int(self.operation.value)
+        self.permission_type_int = int(self.permission_type.value)
+
+    def _check_not_none(self, vars_to_check):
         for param in vars_to_check:
-            if vars[param] is None:
+            if getattr(self, param) is None:
                 raise ValueError("Expected %s to be not None" % (param,))
 
-    def _check_is_string(self, vars, vars_to_check):
+    def _check_is_string(self, vars_to_check):
         for param in vars_to_check:
-            param_value = vars[param]
+            param_value = getattr(self, param)
             if param_value is not None and not isinstance(param_value, string_type):
                 raise ValueError("Expected %s to be a string" % (param,))
 
@@ -157,23 +157,20 @@ class AclBinding(object):
 
         return val
 
-    def _convert_enums(self, restype, resource_pattern_type, operation, permission_type):
-        restype = self._convert_to_enum(restype, ResourceType)
-        resource_pattern_type = self._convert_to_enum(resource_pattern_type, ResourcePatternType)
-        operation = self._convert_to_enum(operation, AclOperation)
-        permission_type = self._convert_to_enum(permission_type, AclPermissionType)
-        return (restype, resource_pattern_type, operation, permission_type)
+    def _convert_enums(self):
+        self.restype = self._convert_to_enum(self.restype, ResourceType)
+        self.resource_pattern_type = self._convert_to_enum(self.resource_pattern_type, ResourcePatternType)
+        self.operation = self._convert_to_enum(self.operation, AclOperation)
+        self.permission_type = self._convert_to_enum(self.permission_type, AclPermissionType)
 
-    def _check_forbidden_enums(self, vars, forbidden_enums):
+    def _check_forbidden_enums(self, forbidden_enums):
         for k, v in forbidden_enums.items():
-            if vars[k] in v:
-                raise ValueError("Cannot use enum %s, value %s in this class" % (k, vars[k].name))
+            enum_value = getattr(self, k)
+            if enum_value in v:
+                raise ValueError("Cannot use enum %s, value %s in this class" % (k, enum_value.name))
 
-    def _convert_args(self, restype, name,
-                      resource_pattern_type, principal, host,
-                      operation, permission_type,
-                      not_none_args=["restype", "name", "resource_pattern_type",
-                                     "principal", "host", "operation", "permission_type"],
+    def _convert_args(self, not_none_args=["restype", "name", "resource_pattern_type",
+                                           "principal", "host", "operation", "permission_type"],
                       string_args=["name", "principal", "host"],
                       forbidden_enums={
                           "restype": [ResourceType.ANY],
@@ -181,32 +178,15 @@ class AclBinding(object):
                                                     ResourcePatternType.MATCH],
                           "operation": [AclOperation.ANY],
                           "permission_type": [AclPermissionType.ANY]
-                      }
-                      ):
-        vars = locals()
-        self._check_not_none(vars, not_none_args)
-        self._check_is_string(vars, string_args)
-
-        (restype, resource_pattern_type,
-         operation, permission_type) = self._convert_enums(restype, resource_pattern_type,
-                                                           operation, permission_type)
-        restype = self._convert_to_enum(restype, ResourceType)
-        resource_pattern_type = self._convert_to_enum(resource_pattern_type, ResourcePatternType)
-        operation = self._convert_to_enum(operation, AclOperation)
-        permission_type = self._convert_to_enum(permission_type, AclPermissionType)
-
-        vars = locals()
-        self._check_forbidden_enums(vars, forbidden_enums)
-
-        return (restype, name,
-                resource_pattern_type, principal, host,
-                operation, permission_type)
+    }):
+        self._check_not_none(not_none_args)
+        self._check_is_string(string_args)
+        self._convert_enums()
+        self._check_forbidden_enums(forbidden_enums)
 
     def __repr__(self):
-        if self.error is not None:
-            return "AclBinding(%s,%s,%s,%s,%s,%s,%s,%r)" % (self._to_tuple() + (self.error,))
-        else:
-            return "AclBinding(%s,%s,%s,%s,%s,%s,%s)" % self._to_tuple()
+        type_name = type(self).__name__
+        return "%s(%s,%s,%s,%s,%s,%s,%s)" % ((type_name,) + self._to_tuple())
 
     def _to_tuple(self):
         return (self.restype, self.name, self.resource_pattern_type,
@@ -254,7 +234,7 @@ class AclBindingFilter(AclBinding):
 
     def __init__(self, restype, name,
                  resource_pattern_type, principal, host,
-                 operation, permission_type, error=None):
+                 operation, permission_type):
         """
         :param ResourceType restype: The resource type, or ResourceType.ANY to match any value.
         :param str name: The resource name to match.
@@ -265,7 +245,6 @@ class AclBindingFilter(AclBinding):
         :param str host: The host to match, or None to match any value.
         :param AclOperation operation: The operation to match or AclOperation.ANY to match any value.
         :param AclPermissionType The permission type to match or AclPermissionType.ANY to match any value.
-        :param KafkaError error: For internal use only.
         """
         super(AclBinding, self).__init__()
 
@@ -279,13 +258,11 @@ class AclBindingFilter(AclBinding):
             "permission_type": [AclPermissionType.UNKNOWN]
         }
 
-        (restype, name, resource_pattern_type, principal, host,
-         operation, permission_type) = self._convert_args(restype, name,
-                                                          resource_pattern_type, principal, host,
-                                                          operation, permission_type,
-                                                          not_none_args=not_none_args,
-                                                          string_args=string_args,
-                                                          forbidden_enums=forbidden_enums)
-
         self._set_attrs(restype, name, resource_pattern_type, principal, host,
-                        operation, permission_type, error)
+                        operation, permission_type)
+
+        self._convert_args(not_none_args=not_none_args,
+                           string_args=string_args,
+                           forbidden_enums=forbidden_enums)
+
+        self._set_c_attrs()
