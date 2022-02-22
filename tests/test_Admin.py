@@ -316,8 +316,8 @@ def test_alter_configs_api():
             f.result(timeout=1)
 
 
-@pytest.mark.skipif(libversion()[1] < 0x000b0500,
-                    reason="AdminAPI requires librdkafka >= v0.11.5")
+@pytest.mark.skipif(libversion()[1] < 0x010900ff,
+                    reason="AdminAPI ACL operations require librdkafka >= v1.9.0")
 def test_create_acls_api():
     """ create_acls() tests, these wont really do anything since there is no
         broker configured. """
@@ -369,8 +369,8 @@ def test_create_acls_api():
                       unknown_operation="it is")
 
 
-@pytest.mark.skipif(libversion()[1] < 0x000b0500,
-                    reason="AdminAPI requires librdkafka >= v0.11.5")
+@pytest.mark.skipif(libversion()[1] < 0x010900ff,
+                    reason="AdminAPI ACL operations require librdkafka >= v1.9.0")
 def test_delete_acls_api():
     """ delete_acls() tests, these wont really do anything since there is no
         broker configured. """
@@ -418,8 +418,8 @@ def test_delete_acls_api():
                       unknown_operation="it is")
 
 
-@pytest.mark.skipif(libversion()[1] < 0x000b0500,
-                    reason="AdminAPI requires librdkafka >= v0.11.5")
+@pytest.mark.skipif(libversion()[1] < 0x010900ff,
+                    reason="AdminAPI ACL operations require librdkafka >= v1.9.0")
 def test_describe_acls_api():
     """ describe_acls() tests, these wont really do anything since there is no
         broker configured. """
