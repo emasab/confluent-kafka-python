@@ -128,35 +128,11 @@ class AdminClient (_AdminClientImpl):
                 fut.set_exception(e)
 
     @staticmethod
-    def _make_create_acls_result(f, futmap):
+    def _make_acls_result(f, futmap):
         """
         Map create ACL binding results to corresponding futures in futmap.
-        The result value of each (successful) future is None.
-        """
-        try:
-            results = f.result()
-            futmap_values = list(futmap.values())
-            len_results = len(results)
-            len_futures = len(futmap_values)
-            if len_results != len_futures:
-                raise RuntimeError(
-                    "Results length {} is different from future-map length {}".format(len_results, len_futures))
-            for i, result in enumerate(results):
-                fut = futmap_values[i]
-                if result is not None:
-                    fut.set_exception(KafkaException(result))
-                else:
-                    fut.set_result(result)
-        except Exception as e:
-            # Request-level exception, raise the same for all AclBindings
-            for resource, fut in futmap.items():
-                fut.set_exception(e)
-
-    @staticmethod
-    def _make_delete_acls_result(f, futmap):
-        """
-        Map delete ACL binding results to corresponding futures in futmap.
-        The result value of each (successful) future is the list of deleted AclBindings.
+        For create_acls the result value of each (successful) future is None.
+        For delete_acls the result value of each (successful) future is the list of deleted AclBindings.
         """
         try:
             results = f.result()
@@ -173,7 +149,7 @@ class AdminClient (_AdminClientImpl):
                 else:
                     fut.set_result(result)
         except Exception as e:
-            # Request-level exception, raise the same for all the AclBindingFilters
+            # Request-level exception, raise the same for all the AclBindings or AclBindingFilters
             for resource, fut in futmap.items():
                 fut.set_exception(e)
 
@@ -406,7 +382,7 @@ class AdminClient (_AdminClientImpl):
         """
 
         f, futmap = AdminClient._make_futures(acls, AclBinding,
-                                              AdminClient._make_create_acls_result)
+                                              AdminClient._make_acls_result)
 
         super(AdminClient, self).create_acls(acls, f, **kwargs)
 
@@ -461,7 +437,7 @@ class AdminClient (_AdminClientImpl):
         """
 
         f, futmap = AdminClient._make_futures(acl_binding_filters, AclBindingFilter,
-                                              AdminClient._make_delete_acls_result)
+                                              AdminClient._make_acls_result)
 
         super(AdminClient, self).delete_acls(acl_binding_filters, f, **kwargs)
 
