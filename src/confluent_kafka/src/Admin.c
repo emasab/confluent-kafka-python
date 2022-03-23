@@ -1778,7 +1778,7 @@ Admin_c_acl_result_to_py (const rd_kafka_acl_result_t **c_result,
 
                 error = KafkaError_new_or_None(
                         rd_kafka_error_code(c_error),
-                        rd_kafka_error_name(c_error));
+                        rd_kafka_error_string(c_error));
 
                 PyList_SET_ITEM(result, i, error);
         }
@@ -1806,7 +1806,7 @@ Admin_c_DeleteAcls_result_responses_to_py (const rd_kafka_DeleteAcls_result_resp
                 if (c_error) {
                         error = KafkaError_new_or_None(
                                 rd_kafka_error_code(c_error),
-                                rd_kafka_error_name(c_error));
+                                rd_kafka_error_string(c_error));
                         PyList_SET_ITEM(result, ti, error);
                 } else {
                         c_matching_acls = rd_kafka_DeleteAcls_result_response_matching_acls(
