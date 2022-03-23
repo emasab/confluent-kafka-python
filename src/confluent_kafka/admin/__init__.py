@@ -170,8 +170,7 @@ class AdminClient (_AdminClientImpl):
         for key in futmap_keys:
             if class_check is not None and not isinstance(key, class_check):
                 raise ValueError("Expected list of {}".format(repr(class_check)))
-            futmap_value = AdminClient._create_future()
-            futmap[key] = futmap_value
+            futmap[key] = AdminClient._create_future()
 
         # Create an internal future for the entire request,
         # this future will trigger _make_..._result() and set result/exception
