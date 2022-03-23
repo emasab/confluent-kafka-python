@@ -491,18 +491,6 @@ typedef struct {
 
 extern PyTypeObject NewPartitionsType;
 
-
-// typedef struct {
-//         PyObject_HEAD
-//         char *name;
-// 	char *principal;
-// 	char *host;
-//         int   new_total_count;
-//         PyObject *replica_assignment;
-// } AclBinding;
-
-// extern PyTypeObject AclBindingType;
-
 int AdminTypes_Ready (void);
 void AdminTypes_AddObjects (PyObject *m);
 
