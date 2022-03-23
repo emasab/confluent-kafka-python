@@ -150,7 +150,72 @@ Admin_options_to_c (Handle *self, rd_kafka_admin_op_t for_api,
 }
 
 
+/**
+ * @brief Convert py AclBinding to C
+ */
+static rd_kafka_AclBinding_t*
+Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
+                        char *errstr,
+                        size_t errstr_size) {
+        int restype, resource_pattern_type, operation, permission_type;
+        char *resname = NULL, *principal = NULL, *host = NULL;
+        rd_kafka_AclBinding_t* ret = NULL;
 
+        PyObject *py_obj = (PyObject *) py_obj_arg;
+        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 0)
+            && cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 0)
+            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 0)
+            && cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 0)
+            && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 0)
+            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 0)
+            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 0)) {
+                    ret = rd_kafka_AclBinding_new(restype, resname, \
+                        resource_pattern_type, principal, host, \
+                        operation, permission_type, errstr, errstr_size);
+        }
+        if (resname) free(resname);
+        if (principal) free(principal);
+        if (host) free(host);
+        return ret;
+}
+
+/**
+ * @brief Convert py AclBindingFilter to C
+ */
+static rd_kafka_AclBindingFilter_t*
+Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
+                        char *errstr,
+                        size_t errstr_size) {
+        int restype, resource_pattern_type, operation, permission_type;
+        char *resname = NULL, *principal = NULL, *host = NULL;
+        PyObject *py_name = NULL, *py_principal = NULL, *py_host = NULL;
+        PyObject *py_obj = (PyObject *) py_obj_arg;
+        rd_kafka_AclBindingFilter_t* ret = NULL;
+
+
+        cfl_PyObject_GetAttr(py_obj, "name", &py_name, NULL, 1);
+        cfl_PyObject_GetAttr(py_obj, "principal", &py_principal, NULL, 1);
+        cfl_PyObject_GetAttr(py_obj, "host", &py_host, NULL, 1);
+        int name_is_none = py_name == Py_None;
+        int principal_is_none = py_principal == Py_None;
+        int host_is_none = py_host == Py_None;
+
+        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 1)
+            && (name_is_none || cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 1))
+            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 1)
+            && (principal_is_none || cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 1))
+            && (host_is_none || cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1))
+            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 1)
+            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 1)) {
+                    ret = rd_kafka_AclBindingFilter_new(restype, resname, \
+                        resource_pattern_type, principal, host, \
+                        operation, permission_type, errstr, errstr_size);
+        }
+        if (resname) free(resname);
+        if (principal) free(principal);
+        if (host) free(host);
+        return ret;
+}
 
 /**
  * @brief Translate Python list(list(int)) replica assignments and set
@@ -976,190 +1041,6 @@ static PyObject *Admin_alter_configs (Handle *self, PyObject *args,
         return NULL;
 }
 
-/**
- * @brief Convert py AclBinding to C
- */
-static rd_kafka_AclBinding_t*
-Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
-                        char *errstr,
-                        size_t errstr_size) {
-        int restype, resource_pattern_type, operation, permission_type;
-        char *resname = NULL, *principal = NULL, *host = NULL;
-        rd_kafka_AclBinding_t* ret = NULL;
-
-        PyObject *py_obj = (PyObject *) py_obj_arg;
-        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 0)
-            && cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 0)
-            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 0)
-            && cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 0)
-            && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 0)
-            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 0)
-            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 0)) {
-                    ret = rd_kafka_AclBinding_new(restype, resname, \
-                        resource_pattern_type, principal, host, \
-                        operation, permission_type, errstr, errstr_size);
-        }
-        if (resname) free(resname);
-        if (principal) free(principal);
-        if (host) free(host);
-        return ret;
-}
-
-/**
- * @brief Convert py AclBindingFilter to C
- */
-static rd_kafka_AclBindingFilter_t*
-Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
-                        char *errstr,
-                        size_t errstr_size) {
-        int restype, resource_pattern_type, operation, permission_type;
-        char *resname = NULL, *principal = NULL, *host = NULL;
-        PyObject *py_name = NULL, *py_principal = NULL, *py_host = NULL;
-        PyObject *py_obj = (PyObject *) py_obj_arg;
-        rd_kafka_AclBindingFilter_t* ret = NULL;
-
-
-        cfl_PyObject_GetAttr(py_obj, "name", &py_name, NULL, 1);
-        cfl_PyObject_GetAttr(py_obj, "principal", &py_principal, NULL, 1);
-        cfl_PyObject_GetAttr(py_obj, "host", &py_host, NULL, 1);
-        int name_is_none = py_name == Py_None;
-        int principal_is_none = py_principal == Py_None;
-        int host_is_none = py_host == Py_None;
-
-        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 1)
-            && (name_is_none || cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 1))
-            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 1)
-            && (principal_is_none || cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 1))
-            && (host_is_none || cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1))
-            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 1)
-            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 1)) {
-                    ret = rd_kafka_AclBindingFilter_new(restype, resname, \
-                        resource_pattern_type, principal, host, \
-                        operation, permission_type, errstr, errstr_size);
-        }
-        if (resname) free(resname);
-        if (principal) free(principal);
-        if (host) free(host);
-        return ret;
-}
-
-/**
- * @brief Convert C AclBinding to py
- */
-static PyObject *
-Admin_c_AclBinding_to_py (const rd_kafka_AclBinding_t *c_acl_binding) {
-        
-        PyObject *args, *kwargs, *AclBinding_type, *acl_binding;
-
-        AclBinding_type = cfl_PyObject_lookup("confluent_kafka.admin",
-                                        "AclBinding");
-        
-        kwargs = PyDict_New();
-
-        cfl_PyDict_SetInt(kwargs, "restype",
-                                     rd_kafka_AclBinding_restype(c_acl_binding));
-        cfl_PyDict_SetString(kwargs, "name",
-                                     rd_kafka_AclBinding_name(c_acl_binding));
-        cfl_PyDict_SetInt(kwargs, "resource_pattern_type",
-                                rd_kafka_AclBinding_resource_pattern_type(c_acl_binding));
-        cfl_PyDict_SetString(kwargs, "principal",
-                                     rd_kafka_AclBinding_principal(c_acl_binding));
-        cfl_PyDict_SetString(kwargs, "host",
-                                     rd_kafka_AclBinding_host(c_acl_binding));
-        cfl_PyDict_SetInt(kwargs, "operation",
-                                     rd_kafka_AclBinding_operation(c_acl_binding));
-        cfl_PyDict_SetInt(kwargs, "permission_type",
-                                     rd_kafka_AclBinding_permission_type(c_acl_binding));
-
-        args = PyTuple_New(0);
-        acl_binding = PyObject_Call(AclBinding_type, args, kwargs);
-
-        Py_DECREF(args);
-        Py_DECREF(kwargs);
-        Py_DECREF(AclBinding_type);
-        return acl_binding;
-}
-
-/**
- * @brief Convert C AclBinding array to py list.
- */
-static PyObject *
-Admin_c_AclBindings_to_py (const rd_kafka_AclBinding_t **c_acls,
-                                          size_t c_acls_cnt) {
-        size_t i;
-        PyObject *result;
-
-        result = PyList_New(c_acls_cnt);
-
-        for (i = 0 ; i < c_acls_cnt ; i++) {
-                PyList_SET_ITEM(result, i,
-                        Admin_c_AclBinding_to_py(c_acls[i]));
-        }
-
-        return result;
-}
-
-
-/**
- * @brief Convert C acl_result_t array to py list.
- */
-static PyObject *
-Admin_c_acl_result_to_py (const rd_kafka_acl_result_t **c_result,
-                            size_t cnt) {
-        PyObject *result;
-        size_t ti;
-
-        result = PyList_New(cnt);
-
-        for (ti = 0 ; ti < cnt ; ti++) {
-                PyObject *error;
-                const rd_kafka_error_t *c_error = rd_kafka_acl_result_error(c_result[ti]);
-
-                error = KafkaError_new_or_None(
-                        rd_kafka_error_code(c_error),
-                        rd_kafka_error_name(c_error));
-
-                PyList_SET_ITEM(result, ti, error);
-        }
-
-        return result;
-}
-
-
-/**
- * @brief Convert C DeleteAcls result response array to py list.
- */
-static PyObject *
-Admin_c_DeleteAcls_result_responses_to_py (const rd_kafka_DeleteAcls_result_response_t **c_result_responses,
-                            size_t cnt) {
-        const rd_kafka_AclBinding_t **c_matching_acls;
-        size_t c_matching_acls_cnt;
-        PyObject *result;
-        size_t ti;
-
-        result = PyList_New(cnt);
-
-        for (ti = 0 ; ti < cnt ; ti++) {
-                PyObject *error;
-                const rd_kafka_error_t *c_error = rd_kafka_DeleteAcls_result_response_error(c_result_responses[ti]);
-
-                if (c_error) {
-                        error = KafkaError_new_or_None(
-                                rd_kafka_error_code(c_error),
-                                rd_kafka_error_name(c_error));
-                        PyList_SET_ITEM(result, ti, error);
-                } else {
-                        c_matching_acls = rd_kafka_DeleteAcls_result_response_matching_acls(
-                                                                        c_result_responses[ti],
-                                                                        &c_matching_acls_cnt);
-                        PyList_SET_ITEM(result, ti,
-                                Admin_c_AclBindings_to_py(c_matching_acls,c_matching_acls_cnt)
-                        );
-                }
-        }
-
-        return result;
-}
 
 /**
  * @brief create_acls
@@ -1821,6 +1702,123 @@ Admin_c_ConfigResource_result_to_py (const rd_kafka_ConfigResource_t **c_resourc
         Py_DECREF(ConfigEntry_type);
         Py_DECREF(result);
         return NULL;
+}
+
+/**
+ * @brief Convert C AclBinding to py
+ */
+static PyObject *
+Admin_c_AclBinding_to_py (const rd_kafka_AclBinding_t *c_acl_binding) {
+        
+        PyObject *args, *kwargs, *AclBinding_type, *acl_binding;
+
+        AclBinding_type = cfl_PyObject_lookup("confluent_kafka.admin",
+                                        "AclBinding");
+        
+        kwargs = PyDict_New();
+
+        cfl_PyDict_SetInt(kwargs, "restype",
+                                     rd_kafka_AclBinding_restype(c_acl_binding));
+        cfl_PyDict_SetString(kwargs, "name",
+                                     rd_kafka_AclBinding_name(c_acl_binding));
+        cfl_PyDict_SetInt(kwargs, "resource_pattern_type",
+                                rd_kafka_AclBinding_resource_pattern_type(c_acl_binding));
+        cfl_PyDict_SetString(kwargs, "principal",
+                                     rd_kafka_AclBinding_principal(c_acl_binding));
+        cfl_PyDict_SetString(kwargs, "host",
+                                     rd_kafka_AclBinding_host(c_acl_binding));
+        cfl_PyDict_SetInt(kwargs, "operation",
+                                     rd_kafka_AclBinding_operation(c_acl_binding));
+        cfl_PyDict_SetInt(kwargs, "permission_type",
+                                     rd_kafka_AclBinding_permission_type(c_acl_binding));
+
+        args = PyTuple_New(0);
+        acl_binding = PyObject_Call(AclBinding_type, args, kwargs);
+
+        Py_DECREF(args);
+        Py_DECREF(kwargs);
+        Py_DECREF(AclBinding_type);
+        return acl_binding;
+}
+
+/**
+ * @brief Convert C AclBinding array to py list.
+ */
+static PyObject *
+Admin_c_AclBindings_to_py (const rd_kafka_AclBinding_t **c_acls,
+                                          size_t c_acls_cnt) {
+        size_t i;
+        PyObject *result;
+
+        result = PyList_New(c_acls_cnt);
+
+        for (i = 0 ; i < c_acls_cnt ; i++) {
+                PyList_SET_ITEM(result, i,
+                        Admin_c_AclBinding_to_py(c_acls[i]));
+        }
+
+        return result;
+}
+
+
+/**
+ * @brief Convert C acl_result_t array to py list.
+ */
+static PyObject *
+Admin_c_acl_result_to_py (const rd_kafka_acl_result_t **c_result,
+                            size_t cnt) {
+        PyObject *result;
+        size_t ti;
+
+        result = PyList_New(cnt);
+
+        for (ti = 0 ; ti < cnt ; ti++) {
+                PyObject *error;
+                const rd_kafka_error_t *c_error = rd_kafka_acl_result_error(c_result[ti]);
+
+                error = KafkaError_new_or_None(
+                        rd_kafka_error_code(c_error),
+                        rd_kafka_error_name(c_error));
+
+                PyList_SET_ITEM(result, ti, error);
+        }
+
+        return result;
+}
+
+/**
+ * @brief Convert C DeleteAcls result response array to py list.
+ */
+static PyObject *
+Admin_c_DeleteAcls_result_responses_to_py (const rd_kafka_DeleteAcls_result_response_t **c_result_responses,
+                            size_t cnt) {
+        const rd_kafka_AclBinding_t **c_matching_acls;
+        size_t c_matching_acls_cnt;
+        PyObject *result;
+        size_t ti;
+
+        result = PyList_New(cnt);
+
+        for (ti = 0 ; ti < cnt ; ti++) {
+                PyObject *error;
+                const rd_kafka_error_t *c_error = rd_kafka_DeleteAcls_result_response_error(c_result_responses[ti]);
+
+                if (c_error) {
+                        error = KafkaError_new_or_None(
+                                rd_kafka_error_code(c_error),
+                                rd_kafka_error_name(c_error));
+                        PyList_SET_ITEM(result, ti, error);
+                } else {
+                        c_matching_acls = rd_kafka_DeleteAcls_result_response_matching_acls(
+                                                                        c_result_responses[ti],
+                                                                        &c_matching_acls_cnt);
+                        PyList_SET_ITEM(result, ti,
+                                Admin_c_AclBindings_to_py(c_matching_acls,c_matching_acls_cnt)
+                        );
+                }
+        }
+
+        return result;
 }
 
 /**
