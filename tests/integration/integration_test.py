@@ -1098,7 +1098,7 @@ def verify_admin_acls(admin_client,
 
     expected_acl_bindings = [acl_binding_1, acl_binding_2, acl_binding_3]
     acl_bindings = admin_client.describe_acls(acl_binding_filter1).result()
-    assert sorted(acl_bindings) == expected_acl_bindings, \
+    assert sorted(acl_bindings) == sorted(expected_acl_bindings), \
         "ACL bindings don't match, actual: {} expected: {}".format(acl_bindings,
                                                                    expected_acl_bindings)
 
