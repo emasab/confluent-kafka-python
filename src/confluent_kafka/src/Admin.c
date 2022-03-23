@@ -153,13 +153,13 @@ Admin_options_to_c (Handle *self, rd_kafka_admin_op_t for_api,
 /**
  * @brief Convert py AclBinding to C
  */
-static rd_kafka_AclBinding_t*
+static rd_kafka_AclBinding_t *
 Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
                         char *errstr,
                         size_t errstr_size) {
         int restype, resource_pattern_type, operation, permission_type;
         char *resname = NULL, *principal = NULL, *host = NULL;
-        rd_kafka_AclBinding_t* ret = NULL;
+        rd_kafka_AclBinding_t *ret = NULL;
 
         PyObject *py_obj = (PyObject *) py_obj_arg;
         if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 0)
