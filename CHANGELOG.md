@@ -2,9 +2,11 @@
 
 ## v1.9.0
 
-librdkafka v1.9.0 is a feature release:
+confluent-kafka-python v1.9.0 is a feature release:
 
  * Added KIP-140 Admin API ACL support (by @emasab)
+
+ 
 ## v1.8.3
 
 v1.8.3 is a maintenance release with the following fixes:

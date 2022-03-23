@@ -162,7 +162,7 @@ def example_create_acls(a, args):
                 print("Created {}".format(res))
 
         except KafkaException as e:
-            print("Failed to describe {}: {}".format(res, e))
+            print("Failed to create ACL {}: {}".format(res, e))
         except Exception:
             raise
 
@@ -422,7 +422,7 @@ if __name__ == '__main__':
         sys.stderr.write(' delta_alter_configs <resource_type1> <resource_name1> ' +
                          '<config=val,config2=val2> <resource_type2> <resource_name2> <config..> ..\n')
         sys.stderr.write(' describe_acls <resource_type1> <resource_name1> <resource_patter_type1> ' +
-                         '<principal1> <host1> <operation1> <permission_type1>\n')
+                         '<principal1> <host1> <operation1> <permission_type1> ..\n')
         sys.stderr.write(' list [<all|topics|brokers|groups>]\n')
         sys.exit(1)
 
