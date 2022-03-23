@@ -384,6 +384,7 @@ PyObject *list_groups (Handle *self, PyObject *args, PyObject *kwargs);
 extern const char list_topics_doc[];
 extern const char list_groups_doc[];
 
+
 #ifdef RD_KAFKA_V_HEADERS
 rd_kafka_headers_t *py_headers_to_c (PyObject *hdrs);
 PyObject *c_headers_to_py (rd_kafka_headers_t *headers);
