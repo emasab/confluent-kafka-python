@@ -138,7 +138,7 @@ class AclBinding(object):
         for param in vars_to_check:
             param_value = getattr(self, param)
             if param_value is not None and not isinstance(param_value, string_type):
-                raise ValueError("Expected %s to be a string" % (param,))
+                raise TypeError("Expected %s to be a string" % (param,))
 
     def _convert_to_enum(self, val, enum_clazz):
         if type(val) == str:
@@ -153,7 +153,7 @@ class AclBinding(object):
             val = enum_clazz(val)
 
         elif type(val) != enum_clazz:
-            raise ValueError("Unknown value \"%s\": should be a %s" % (val, enum_clazz.__name__))
+            raise TypeError("Unknown value \"%s\": should be a %s" % (val, enum_clazz.__name__))
 
         return val
 
