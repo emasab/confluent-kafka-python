@@ -1768,19 +1768,19 @@ static PyObject *
 Admin_c_acl_result_to_py (const rd_kafka_acl_result_t **c_result,
                             size_t cnt) {
         PyObject *result;
-        size_t ti;
+        size_t i;
 
         result = PyList_New(cnt);
 
-        for (ti = 0 ; ti < cnt ; ti++) {
+        for (i = 0 ; i < cnt ; i++) {
                 PyObject *error;
-                const rd_kafka_error_t *c_error = rd_kafka_acl_result_error(c_result[ti]);
+                const rd_kafka_error_t *c_error = rd_kafka_acl_result_error(c_result[i]);
 
                 error = KafkaError_new_or_None(
                         rd_kafka_error_code(c_error),
                         rd_kafka_error_name(c_error));
 
-                PyList_SET_ITEM(result, ti, error);
+                PyList_SET_ITEM(result, i, error);
         }
 
         return result;
