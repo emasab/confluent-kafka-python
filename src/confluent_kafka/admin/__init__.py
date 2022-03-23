@@ -116,7 +116,7 @@ class AdminClient (_AdminClientImpl):
     @staticmethod
     def _make_create_acls_result(f, futmap):
         """
-        Map create acl binding results to corresponding futures in futmap.
+        Map create ACL binding results to corresponding futures in futmap.
         The result value of each (successful) future is None.
         """
         try:
@@ -141,7 +141,7 @@ class AdminClient (_AdminClientImpl):
     @staticmethod
     def _make_delete_acls_result(f, futmap):
         """
-        Map delete acl binding results to corresponding futures in futmap.
+        Map delete ACL binding results to corresponding futures in futmap.
         The result value of each (successful) future is the list of deleted AclBindings.
         """
         try:
@@ -373,16 +373,16 @@ class AdminClient (_AdminClientImpl):
 
     def create_acls(self, acls, **kwargs):
         """
-        Create one or more acl bindings.
+        Create one or more ACL bindings.
 
-        :param list(AclBinding) acls: A list of acl binding specifications (AclBinding)
-                         that must be created.
+        :param list(AclBinding) acls: A list of ACL binding specifications (AclBinding)
+                         to create.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
 
-        :returns: A dict of futures for each acl binding, keyed by the AclBinding object.
-                  The future result() method returns None.
+        :returns: A dict of futures for each ACL binding, keyed by the AclBinding object.
+                  The future result() method returns None on success.
 
         :rtype: dict(<AclBinding, future>)
 
@@ -400,7 +400,7 @@ class AdminClient (_AdminClientImpl):
 
     def describe_acls(self, acl_binding_filter, **kwargs):
         """
-        Get acl bindings matching an acl binding filter.
+        Get ACL bindings matching an ACL binding filter.
 
         :param AclBindingFilter acl_binding_filter: a filter with attributes that
                   must correspond, None to match any string or enums containing ANY to match
@@ -426,9 +426,9 @@ class AdminClient (_AdminClientImpl):
 
     def delete_acls(self, acl_binding_filters, **kwargs):
         """
-        Delete acl bindings matching one or more acl binding filters.
+        Delete ACL bindings matching one or more ACL binding filters.
 
-        :param list(AclBindingFilter) acl_binding_filters: a list of acl binding filters
+        :param list(AclBindingFilter) acl_binding_filters: a list of ACL binding filters
                   for acls to delete, with attributes that must correspond, None to match
                   any string or enums containing ANY to match any value or MATCH to perform
                   pattern matching with the resource name
@@ -436,7 +436,7 @@ class AdminClient (_AdminClientImpl):
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
 
-        :returns: A dict of futures for each acl binding filter, keyed by the AclBindingFilter object.
+        :returns: A dict of futures for each ACL binding filter, keyed by the AclBindingFilter object.
                   The future result() method returns a list of AclBinding.
 
         :rtype: dict(<AclBindingFilter, future>)

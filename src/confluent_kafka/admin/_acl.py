@@ -68,7 +68,7 @@ class AclPermissionType(Enum):
 @functools.total_ordering
 class AclBinding(object):
     """
-    Represents an acl binding that specify the operation and permission type for a specific principal
+    Represents an ACL binding that specify the operation and permission type for a specific principal
     over one or more resources of the same type. Used by create_acls, returned by describe_acls and delete_acls.
 
     Parameters
@@ -209,7 +209,7 @@ class AclBinding(object):
 
 class AclBindingFilter(AclBinding):
     """
-    Represents an acl binding filter used to return a list of acl bindings matching some or all of its attributes.
+    Represents an ACL binding filter used to return a list of ACL bindings matching some or all of its attributes.
     Used by describe_acls and delete_acls.
 
     Parameters
