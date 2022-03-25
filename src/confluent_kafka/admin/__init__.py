@@ -389,11 +389,14 @@ class AdminClient (_AdminClientImpl):
 
     def describe_acls(self, acl_binding_filter, **kwargs):
         """
-        Get ACL bindings matching an ACL binding filter.
+        Match ACL bindings by filter.
 
         :param AclBindingFilter acl_binding_filter: a filter with attributes that
-                  must correspond, None to match any string or enums containing ANY to match
-                  any value or MATCH to perform pattern matching with the resource name
+                  must match.
+                  String attributes match exact values or any string if set to None.
+                  Enums attributes match exact values or any value if ending with _ANY.
+                  If ResourcePatternType is set to MATCH returns all the ACL bindings with
+                  LITERAL, WILDCARD or PREFIXED pattern type that match the resource name.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
@@ -418,9 +421,11 @@ class AdminClient (_AdminClientImpl):
         Delete ACL bindings matching one or more ACL binding filters.
 
         :param list(AclBindingFilter) acl_binding_filters: a list of ACL binding filters
-                  for acls to delete, with attributes that must correspond, None to match
-                  any string or enums containing ANY to match any value or MATCH to perform
-                  pattern matching with the resource name
+                  to match ACLs to delete.
+                  String attributes match exact values or any string if set to None.
+                  Enums attributes match exact values or any value if ending with _ANY.
+                  If ResourcePatternType is set to MATCH deletes all the ACL bindings with
+                  LITERAL, WILDCARD or PREFIXED pattern type that match the resource name.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
