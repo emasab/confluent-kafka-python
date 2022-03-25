@@ -329,19 +329,19 @@ def test_create_acls_api():
                       request_timeout=10.0)
     # ignore the result
 
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         a.create_acls(None)
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         a.create_acls("topic")
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         a.create_acls(["topic"])
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         a.create_acls([None, "topic"])
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         a.create_acls([None, acl_binding1])
 
     fs = a.create_acls([acl_binding1, acl_binding2])
@@ -379,17 +379,14 @@ def test_delete_acls_api():
     fs = a.delete_acls([acl_binding_filter1])
     # ignore the result
 
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         a.delete_acls(None)
 
-    with pytest.raises(Exception):
+    with pytest.raises(ValueError):
         a.delete_acls([])
 
     with pytest.raises(ValueError):
-        a.delete_topics([None, acl_binding_filter1])
-
-    with pytest.raises(ValueError):
-        a.delete_topics([None, acl_binding_filter1])
+        a.delete_acls([None, acl_binding_filter1])
 
     fs = a.delete_acls([acl_binding_filter1, acl_binding_filter2])
     with pytest.raises(KafkaException):
@@ -426,10 +423,10 @@ def test_describe_acls_api():
     a.describe_acls(acl_binding_filter1)
     # ignore the result
 
-    with pytest.raises(Exception):
+    with pytest.raises(TypeError):
         a.describe_acls(None)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         a.describe_acls(acl_binding1)
 
     f = a.describe_acls(acl_binding_filter1)

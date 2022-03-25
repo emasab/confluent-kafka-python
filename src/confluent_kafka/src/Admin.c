@@ -1220,7 +1220,7 @@ static PyObject *Admin_describe_acls (Handle *self, PyObject *args, PyObject *kw
         if (r == -1)
                 goto err; /* Exception raised by IsInstance() */
         else if (r == 0) {
-                PyErr_SetString(PyExc_ValueError,
+                PyErr_SetString(PyExc_TypeError,
                                 "Expected an "
                                 "AclBindingFilter object");
                 goto err;
