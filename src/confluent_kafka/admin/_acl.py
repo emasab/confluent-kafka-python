@@ -14,24 +14,7 @@
 
 from enum import Enum
 import functools
-from ..cimpl import (ACL_OPERATION_UNKNOWN,
-                     ACL_OPERATION_ANY,
-                     ACL_OPERATION_ALL,
-                     ACL_OPERATION_READ,
-                     ACL_OPERATION_WRITE,
-                     ACL_OPERATION_CREATE,
-                     ACL_OPERATION_DELETE,
-                     ACL_OPERATION_ALTER,
-                     ACL_OPERATION_DESCRIBE,
-                     ACL_OPERATION_CLUSTER_ACTION,
-                     ACL_OPERATION_DESCRIBE_CONFIGS,
-                     ACL_OPERATION_ALTER_CONFIGS,
-                     ACL_OPERATION_IDEMPOTENT_WRITE,
-                     ACL_PERMISSION_TYPE_UNKNOWN,
-                     ACL_PERMISSION_TYPE_ANY,
-                     ACL_PERMISSION_TYPE_DENY,
-                     ACL_PERMISSION_TYPE_ALLOW)
-
+from .. import cimpl as _cimpl
 from ._resource import ResourceType, ResourcePatternType
 
 try:
@@ -44,19 +27,19 @@ class AclOperation(Enum):
     """
     Enumerates the different types of ACL operation.
     """
-    UNKNOWN = ACL_OPERATION_UNKNOWN  # : Unknown
-    ANY = ACL_OPERATION_ANY  # : In a filter, matches any AclOperation
-    ALL = ACL_OPERATION_ALL  # : ALL operation
-    READ = ACL_OPERATION_READ  # : READ operation
-    WRITE = ACL_OPERATION_WRITE  # : WRITE operation
-    CREATE = ACL_OPERATION_CREATE  # : CREATE operation
-    DELETE = ACL_OPERATION_DELETE  # : DELETE operation
-    ALTER = ACL_OPERATION_ALTER  # : ALTER operation
-    DESCRIBE = ACL_OPERATION_DESCRIBE  # : DESCRIBE operation
-    CLUSTER_ACTION = ACL_OPERATION_CLUSTER_ACTION  # : CLUSTER_ACTION operation
-    DESCRIBE_CONFIGS = ACL_OPERATION_DESCRIBE_CONFIGS  # : DESCRIBE_CONFIGS operation
-    ALTER_CONFIGS = ACL_OPERATION_ALTER_CONFIGS  # : ALTER_CONFIGS  operation
-    IDEMPOTENT_WRITE = ACL_OPERATION_IDEMPOTENT_WRITE  # : IDEMPOTENT_WRITE operation
+    UNKNOWN = _cimpl.ACL_OPERATION_UNKNOWN  # : Unknown
+    ANY = _cimpl.ACL_OPERATION_ANY  # : In a filter, matches any AclOperation
+    ALL = _cimpl.ACL_OPERATION_ALL  # : ALL operation
+    READ = _cimpl.ACL_OPERATION_READ  # : READ operation
+    WRITE = _cimpl.ACL_OPERATION_WRITE  # : WRITE operation
+    CREATE = _cimpl.ACL_OPERATION_CREATE  # : CREATE operation
+    DELETE = _cimpl.ACL_OPERATION_DELETE  # : DELETE operation
+    ALTER = _cimpl.ACL_OPERATION_ALTER  # : ALTER operation
+    DESCRIBE = _cimpl.ACL_OPERATION_DESCRIBE  # : DESCRIBE operation
+    CLUSTER_ACTION = _cimpl.ACL_OPERATION_CLUSTER_ACTION  # : CLUSTER_ACTION operation
+    DESCRIBE_CONFIGS = _cimpl.ACL_OPERATION_DESCRIBE_CONFIGS  # : DESCRIBE_CONFIGS operation
+    ALTER_CONFIGS = _cimpl.ACL_OPERATION_ALTER_CONFIGS  # : ALTER_CONFIGS  operation
+    IDEMPOTENT_WRITE = _cimpl.ACL_OPERATION_IDEMPOTENT_WRITE  # : IDEMPOTENT_WRITE operation
 
     def __lt__(self, other):
         if self.__class__ != other.__class__:
@@ -68,10 +51,10 @@ class AclPermissionType(Enum):
     """
     Enumerates the different types of ACL permission types.
     """
-    UNKNOWN = ACL_PERMISSION_TYPE_UNKNOWN  # : Unknown
-    ANY = ACL_PERMISSION_TYPE_ANY  # : In a filter, matches any AclPermissionType
-    DENY = ACL_PERMISSION_TYPE_DENY  # : Disallows access
-    ALLOW = ACL_PERMISSION_TYPE_ALLOW  # : Grants access
+    UNKNOWN = _cimpl.ACL_PERMISSION_TYPE_UNKNOWN  # : Unknown
+    ANY = _cimpl.ACL_PERMISSION_TYPE_ANY  # : In a filter, matches any AclPermissionType
+    DENY = _cimpl.ACL_PERMISSION_TYPE_DENY  # : Disallows access
+    ALLOW = _cimpl.ACL_PERMISSION_TYPE_ALLOW  # : Grants access
 
     def __lt__(self, other):
         if self.__class__ != other.__class__:

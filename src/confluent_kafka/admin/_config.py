@@ -14,12 +14,7 @@
 
 from enum import Enum
 import functools
-from ..cimpl import (CONFIG_SOURCE_UNKNOWN_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG,
-                     CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG,
-                     CONFIG_SOURCE_STATIC_BROKER_CONFIG,
-                     CONFIG_SOURCE_DEFAULT_CONFIG)
+from .. import cimpl as _cimpl
 from ._resource import ResourceType
 
 
@@ -29,12 +24,12 @@ class ConfigSource(Enum):
     Used by ConfigEntry to specify the
     source of configuration properties returned by `describe_configs()`.
     """
-    UNKNOWN_CONFIG = CONFIG_SOURCE_UNKNOWN_CONFIG  #: Unknown
-    DYNAMIC_TOPIC_CONFIG = CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG  #: Dynamic Topic
-    DYNAMIC_BROKER_CONFIG = CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG  #: Dynamic Broker
-    DYNAMIC_DEFAULT_BROKER_CONFIG = CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG  #: Dynamic Default Broker
-    STATIC_BROKER_CONFIG = CONFIG_SOURCE_STATIC_BROKER_CONFIG  #: Static Broker
-    DEFAULT_CONFIG = CONFIG_SOURCE_DEFAULT_CONFIG  #: Default
+    UNKNOWN_CONFIG = _cimpl.CONFIG_SOURCE_UNKNOWN_CONFIG  #: Unknown
+    DYNAMIC_TOPIC_CONFIG = _cimpl.CONFIG_SOURCE_DYNAMIC_TOPIC_CONFIG  #: Dynamic Topic
+    DYNAMIC_BROKER_CONFIG = _cimpl.CONFIG_SOURCE_DYNAMIC_BROKER_CONFIG  #: Dynamic Broker
+    DYNAMIC_DEFAULT_BROKER_CONFIG = _cimpl.CONFIG_SOURCE_DYNAMIC_DEFAULT_BROKER_CONFIG  #: Dynamic Default Broker
+    STATIC_BROKER_CONFIG = _cimpl.CONFIG_SOURCE_STATIC_BROKER_CONFIG  #: Static Broker
+    DEFAULT_CONFIG = _cimpl.CONFIG_SOURCE_DEFAULT_CONFIG  #: Default
 
 
 class ConfigEntry(object):
