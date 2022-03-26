@@ -99,18 +99,6 @@ class AclBinding(object):
         :param AclOperation operation: The operation/s specified by this binding.
         :param AclPermissionType The permission type for the specified operation.
         """
-        super(AclBinding, self).__init__()
-
-        self._set_attrs(restype, name, resource_pattern_type, principal, host,
-                        operation, permission_type)
-
-        self._convert_args()
-
-        self._set_c_attrs()
-
-    def _set_attrs(self, restype, name,
-                   resource_pattern_type, principal, host,
-                   operation, permission_type):
         self.restype = restype
         self.name = name
         self.resource_pattern_type = resource_pattern_type
@@ -118,8 +106,7 @@ class AclBinding(object):
         self.host = host
         self.operation = operation
         self.permission_type = permission_type
-
-    def _set_c_attrs(self):
+        self._convert_args()
         # for the C code
         self.restype_int = int(self.restype.value)
         self.resource_pattern_type_int = int(self.resource_pattern_type.value)
@@ -166,16 +153,26 @@ class AclBinding(object):
             if enum_value in v:
                 raise ValueError("Cannot use enum %s, value %s in this class" % (k, enum_value.name))
 
-    def _convert_args(self, not_none_args=["restype", "name", "resource_pattern_type",
-                                           "principal", "host", "operation", "permission_type"],
-                      string_args=["name", "principal", "host"],
-                      forbidden_enums={
-                          "restype": [ResourceType.ANY],
-                          "resource_pattern_type": [ResourcePatternType.ANY,
-                                                    ResourcePatternType.MATCH],
-                          "operation": [AclOperation.ANY],
-                          "permission_type": [AclPermissionType.ANY]
-    }):
+    def _not_none_args(self):
+        return ["restype", "name", "resource_pattern_type",
+                "principal", "host", "operation", "permission_type"]
+
+    def _string_args(self):
+        return ["name", "principal", "host"]
+
+    def _forbidden_enums(self):
+        return {
+            "restype": [ResourceType.ANY],
+            "resource_pattern_type": [ResourcePatternType.ANY,
+                                      ResourcePatternType.MATCH],
+            "operation": [AclOperation.ANY],
+            "permission_type": [AclPermissionType.ANY]
+        }
+
+    def _convert_args(self):
+        not_none_args = self._not_none_args()
+        string_args = self._string_args()
+        forbidden_enums = self._forbidden_enums()
         self._check_not_none(not_none_args)
         self._check_is_string(string_args)
         self._convert_enums()
@@ -229,37 +226,14 @@ class AclBindingFilter(AclBinding):
         The permission type to match or AclPermissionType.ANY to match any value.
     """
 
-    def __init__(self, restype, name,
-                 resource_pattern_type, principal, host,
-                 operation, permission_type):
-        """
-        :param ResourceType restype: The resource type, or ResourceType.ANY to match any value.
-        :param str name: The resource name to match.
-                        None matches any value.
-        :param ResourcePatternType resource_pattern_type: The resource pattern, ResourcePatternType.ANY
-                        to match any value or ResourcePatternType.MATCH to perform pattern matching.
-        :param str principal: The principal to match, or None to match any value.
-        :param str host: The host to match, or None to match any value.
-        :param AclOperation operation: The operation to match or AclOperation.ANY to match any value.
-        :param AclPermissionType The permission type to match or AclPermissionType.ANY to match any value.
-        """
-        super(AclBinding, self).__init__()
+    def _not_none_args(self):
+        return ["restype", "resource_pattern_type",
+                "operation", "permission_type"]
 
-        not_none_args = ["restype", "resource_pattern_type",
-                         "operation", "permission_type"]
-        string_args = ["name", "principal", "host"]
-        forbidden_enums = {
+    def _forbidden_enums(self):
+        return {
             "restype": [ResourceType.UNKNOWN],
             "resource_pattern_type": [ResourcePatternType.UNKNOWN],
             "operation": [AclOperation.UNKNOWN],
             "permission_type": [AclPermissionType.UNKNOWN]
         }
-
-        self._set_attrs(restype, name, resource_pattern_type, principal, host,
-                        operation, permission_type)
-
-        self._convert_args(not_none_args=not_none_args,
-                           string_args=string_args,
-                           forbidden_enums=forbidden_enums)
-
-        self._set_c_attrs()
