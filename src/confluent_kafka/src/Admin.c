@@ -162,13 +162,13 @@ Admin_py_to_c_AclBinding (const PyObject *py_obj_arg,
         rd_kafka_AclBinding_t *ret = NULL;
 
         PyObject *py_obj = (PyObject *) py_obj_arg;
-        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 0)
-            && cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 0)
-            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 0)
-            && cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 0)
-            && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 0)
-            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 0)
-            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 0)) {
+        if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 1)
+            && cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 1, 0)
+            && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 1)
+            && cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 1, 0)
+            && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1, 0)
+            && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 1)
+            && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 1)) {
                     ret = rd_kafka_AclBinding_new(restype, resname, \
                         resource_pattern_type, principal, host, \
                         operation, permission_type, errstr, errstr_size);
@@ -188,23 +188,14 @@ Admin_py_to_c_AclBindingFilter (const PyObject *py_obj_arg,
                         size_t errstr_size) {
         int restype, resource_pattern_type, operation, permission_type;
         char *resname = NULL, *principal = NULL, *host = NULL;
-        PyObject *py_name = NULL, *py_principal = NULL, *py_host = NULL;
         PyObject *py_obj = (PyObject *) py_obj_arg;
         rd_kafka_AclBindingFilter_t* ret = NULL;
 
-
-        cfl_PyObject_GetAttr(py_obj, "name", &py_name, NULL, 1);
-        cfl_PyObject_GetAttr(py_obj, "principal", &py_principal, NULL, 1);
-        cfl_PyObject_GetAttr(py_obj, "host", &py_host, NULL, 1);
-        int name_is_none = py_name == Py_None;
-        int principal_is_none = py_principal == Py_None;
-        int host_is_none = py_host == Py_None;
-
         if(cfl_PyObject_GetInt(py_obj, "restype_int", &restype, 0, 1)
-            && (name_is_none || cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 1))
+            && cfl_PyObject_GetString(py_obj, "name", &resname, NULL, 1, 1)
             && cfl_PyObject_GetInt(py_obj, "resource_pattern_type_int", &resource_pattern_type, 0, 1)
-            && (principal_is_none || cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 1))
-            && (host_is_none || cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1))
+            && cfl_PyObject_GetString(py_obj, "principal", &principal, NULL, 1, 1)
+            && cfl_PyObject_GetString(py_obj, "host", &host, NULL, 1, 1)
             && cfl_PyObject_GetInt(py_obj, "operation_int", &operation, 0, 1)
             && cfl_PyObject_GetInt(py_obj, "permission_type_int", &permission_type, 0, 1)) {
                     ret = rd_kafka_AclBindingFilter_new(restype, resname, \
@@ -835,7 +826,7 @@ static PyObject *Admin_describe_configs (Handle *self, PyObject *args,
                 if (!cfl_PyObject_GetInt(res, "restype_int", &restype, 0, 0))
                         goto err;
 
-                if (!cfl_PyObject_GetString(res, "name", &resname, NULL, 0))
+                if (!cfl_PyObject_GetString(res, "name", &resname, NULL, 0, 0))
                         goto err;
 
                 c_objs[i] = rd_kafka_ConfigResource_new(
@@ -977,7 +968,7 @@ static PyObject *Admin_alter_configs (Handle *self, PyObject *args,
                 if (!cfl_PyObject_GetInt(res, "restype_int", &restype, 0, 0))
                         goto err;
 
-                if (!cfl_PyObject_GetString(res, "name", &resname, NULL, 0))
+                if (!cfl_PyObject_GetString(res, "name", &resname, NULL, 0, 0))
                         goto err;
 
                 c_objs[i] = rd_kafka_ConfigResource_new(
@@ -995,7 +986,7 @@ static PyObject *Admin_alter_configs (Handle *self, PyObject *args,
                  * Translate and apply config entries in the various dicts.
                  */
                 if (!cfl_PyObject_GetAttr(res, "set_config_dict", &dict,
-                                          &PyDict_Type, 1)) {
+                                          &PyDict_Type, 1, 0)) {
                         i++;
                         goto err;
                 }

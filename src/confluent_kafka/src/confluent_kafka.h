@@ -328,11 +328,12 @@ int cfl_PyObject_SetString (PyObject *o, const char *name, const char *val);
 int cfl_PyObject_SetInt (PyObject *o, const char *name, int val);
 int cfl_PyObject_GetAttr (PyObject *object, const char *attr_name,
                           PyObject **valp, const PyTypeObject *py_type,
-                          int required);
+                          int required, int allow_None);
 int cfl_PyObject_GetInt (PyObject *object, const char *attr_name, int *valp,
                          int defval, int required);
 int cfl_PyObject_GetString (PyObject *object, const char *attr_name,
-                            char **valp, const char *defval, int required);
+                            char **valp, const char *defval, int required,
+                            int allow_None);
 int cfl_PyBool_get (PyObject *object, const char *name, int *valp);
 
 PyObject *cfl_int32_array_to_py_list (const int32_t *arr, size_t cnt);
