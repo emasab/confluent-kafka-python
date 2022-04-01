@@ -27,19 +27,19 @@ class AclOperation(Enum):
     """
     Enumerates the different types of ACL operation.
     """
-    UNKNOWN = _cimpl.ACL_OPERATION_UNKNOWN  # : Unknown
-    ANY = _cimpl.ACL_OPERATION_ANY  # : In a filter, matches any AclOperation
-    ALL = _cimpl.ACL_OPERATION_ALL  # : ALL operation
-    READ = _cimpl.ACL_OPERATION_READ  # : READ operation
-    WRITE = _cimpl.ACL_OPERATION_WRITE  # : WRITE operation
-    CREATE = _cimpl.ACL_OPERATION_CREATE  # : CREATE operation
-    DELETE = _cimpl.ACL_OPERATION_DELETE  # : DELETE operation
-    ALTER = _cimpl.ACL_OPERATION_ALTER  # : ALTER operation
-    DESCRIBE = _cimpl.ACL_OPERATION_DESCRIBE  # : DESCRIBE operation
-    CLUSTER_ACTION = _cimpl.ACL_OPERATION_CLUSTER_ACTION  # : CLUSTER_ACTION operation
-    DESCRIBE_CONFIGS = _cimpl.ACL_OPERATION_DESCRIBE_CONFIGS  # : DESCRIBE_CONFIGS operation
-    ALTER_CONFIGS = _cimpl.ACL_OPERATION_ALTER_CONFIGS  # : ALTER_CONFIGS  operation
-    IDEMPOTENT_WRITE = _cimpl.ACL_OPERATION_IDEMPOTENT_WRITE  # : IDEMPOTENT_WRITE operation
+    UNKNOWN = _cimpl.ACL_OPERATION_UNKNOWN  #: Unknown
+    ANY = _cimpl.ACL_OPERATION_ANY  #: In a filter, matches any AclOperation
+    ALL = _cimpl.ACL_OPERATION_ALL  #: ALL operation
+    READ = _cimpl.ACL_OPERATION_READ  #: READ operation
+    WRITE = _cimpl.ACL_OPERATION_WRITE  #: WRITE operation
+    CREATE = _cimpl.ACL_OPERATION_CREATE  #: CREATE operation
+    DELETE = _cimpl.ACL_OPERATION_DELETE  #: DELETE operation
+    ALTER = _cimpl.ACL_OPERATION_ALTER  #: ALTER operation
+    DESCRIBE = _cimpl.ACL_OPERATION_DESCRIBE  #: DESCRIBE operation
+    CLUSTER_ACTION = _cimpl.ACL_OPERATION_CLUSTER_ACTION  #: CLUSTER_ACTION operation
+    DESCRIBE_CONFIGS = _cimpl.ACL_OPERATION_DESCRIBE_CONFIGS  #: DESCRIBE_CONFIGS operation
+    ALTER_CONFIGS = _cimpl.ACL_OPERATION_ALTER_CONFIGS  #: ALTER_CONFIGS  operation
+    IDEMPOTENT_WRITE = _cimpl.ACL_OPERATION_IDEMPOTENT_WRITE  #: IDEMPOTENT_WRITE operation
 
     def __lt__(self, other):
         if self.__class__ != other.__class__:
@@ -51,10 +51,10 @@ class AclPermissionType(Enum):
     """
     Enumerates the different types of ACL permission types.
     """
-    UNKNOWN = _cimpl.ACL_PERMISSION_TYPE_UNKNOWN  # : Unknown
-    ANY = _cimpl.ACL_PERMISSION_TYPE_ANY  # : In a filter, matches any AclPermissionType
-    DENY = _cimpl.ACL_PERMISSION_TYPE_DENY  # : Disallows access
-    ALLOW = _cimpl.ACL_PERMISSION_TYPE_ALLOW  # : Grants access
+    UNKNOWN = _cimpl.ACL_PERMISSION_TYPE_UNKNOWN  #: Unknown
+    ANY = _cimpl.ACL_PERMISSION_TYPE_ANY  #: In a filter, matches any AclPermissionType
+    DENY = _cimpl.ACL_PERMISSION_TYPE_DENY  #: Disallows access
+    ALLOW = _cimpl.ACL_PERMISSION_TYPE_ALLOW  #: Grants access
 
     def __lt__(self, other):
         if self.__class__ != other.__class__:
@@ -66,39 +66,31 @@ class AclPermissionType(Enum):
 class AclBinding(object):
     """
     Represents an ACL binding that specify the operation and permission type for a specific principal
-    over one or more resources of the same type. Used by create_acls, returned by describe_acls and delete_acls.
+    over one or more resources of the same type. Used by :meth:`AdminClient.create_acls`,
+    returned by :meth:`AdminClient.describe_acls` and :meth:`AdminClient.delete_acls`.
 
     Parameters
     ----------
-    restype : `ResourceType`
+    restype : ResourceType
         The resource type.
-    name : `str`
-        The resource name, which depends on the resource type. For RESOURCE_BROKER, the resource name is the broker id.
-    resource_pattern_type : `ResourcePatternType`
+    name : str
+        The resource name, which depends on the resource type. For :attr:`ResourceType.BROKER`,
+        the resource name is the broker id.
+    resource_pattern_type : ResourcePatternType
         The resource pattern, relative to the name.
-    principal : `str`
+    principal : str
         The principal this AclBinding refers to.
-    host : `str`
+    host : str
         The host that the call is allowed to come from.
-    operation: `AclOperation`
+    operation: AclOperation
         The operation/s specified by this binding.
-    permission_type: `AclPermissionType`
+    permission_type: AclPermissionType
         The permission type for the specified operation.
     """
 
     def __init__(self, restype, name,
                  resource_pattern_type, principal, host,
                  operation, permission_type):
-        """
-        :param ResourceType restype: Resource type.
-        :param str name: The resource name, which depends on restype.
-                         For RESOURCE_BROKER, the resource name is the broker id.
-        :param ResourcePatternType resource_pattern_type: The resource pattern, relative to the name.
-        :param str principal: The principal this AclBinding refers to.
-        :param str host: The host that the call is allowed to come from.
-        :param AclOperation operation: The operation/s specified by this binding.
-        :param AclPermissionType The permission type for the specified operation.
-        """
         self.restype = restype
         self.name = name
         self.resource_pattern_type = resource_pattern_type
@@ -204,26 +196,26 @@ class AclBinding(object):
 class AclBindingFilter(AclBinding):
     """
     Represents an ACL binding filter used to return a list of ACL bindings matching some or all of its attributes.
-    Used by describe_acls and delete_acls.
+    Used by :meth:`AdminClient.describe_acls` and :meth:`AdminClient.delete_acls`.
 
     Parameters
     ----------
-    restype : `ResourceType`
-        The resource type, or ResourceType.ANY to match any value.
-    name : `str`
+    restype : ResourceType
+        The resource type, or :attr:`ResourceType.ANY` to match any value.
+    name : str
         The resource name to match.
         None matches any value.
-    resource_pattern_type : `ResourcePatternType`
-        The resource pattern, ResourcePatternType.ANY to match any value or
-        ResourcePatternType.MATCH to perform pattern matching.
-    principal : `str`
+    resource_pattern_type : ResourcePatternType
+        The resource pattern, :attr:`ResourcePatternType.ANY` to match any value or
+        :attr:`ResourcePatternType.MATCH` to perform pattern matching.
+    principal : str
         The principal to match, or None to match any value.
-    host : `str`
+    host : str
         The host to match, or None to match any value.
-    operation: `AclOperation`
-        The operation to match or AclOperation.ANY to match any value.
-    permission_type: `AclPermissionType`
-        The permission type to match or AclPermissionType.ANY to match any value.
+    operation: AclOperation
+        The operation to match or :attr:`AclOperation.ANY` to match any value.
+    permission_type: AclPermissionType
+        The permission type to match or :attr:`AclPermissionType.ANY` to match any value.
     """
 
     def _not_none_args(self):

@@ -364,16 +364,16 @@ class AdminClient (_AdminClientImpl):
         """
         Create one or more ACL bindings.
 
-        :param list(AclBinding) acls: A list of ACL binding specifications (AclBinding)
+        :param list(AclBinding) acls: A list of ACL binding specifications (:class:`.AclBinding`)
                          to create.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
 
-        :returns: A dict of futures for each ACL binding, keyed by the AclBinding object.
+        :returns: A dict of futures for each ACL binding, keyed by the :class:`AclBinding` object.
                   The future result() method returns None on success.
 
-        :rtype: dict(<AclBinding, future>)
+        :rtype: dict[AclBinding, future]
 
         :raises KafkaException: Operation failed locally or on broker.
         :raises TypeException: Invalid input.
@@ -394,14 +394,16 @@ class AdminClient (_AdminClientImpl):
         :param AclBindingFilter acl_binding_filter: a filter with attributes that
                   must match.
                   String attributes match exact values or any string if set to None.
-                  Enums attributes match exact values or any value if ending with _ANY.
-                  If ResourcePatternType is set to MATCH returns all the ACL bindings with
-                  LITERAL, WILDCARD or PREFIXED pattern type that match the resource name.
+                  Enums attributes match exact values or any value if ending with `_ANY`.
+                  If :class:`ResourcePatternType` is set to :attr:`ResourcePatternType.MATCH` returns all
+                  the ACL bindings with :attr:`ResourcePatternType.LITERAL`,
+                  :attr:`ResourcePatternType.WILDCARD` or :attr:`ResourcePatternType.PREFIXED` pattern
+                  type that match the resource name.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
 
-        :returns: A future returning a list(AclBinding) as result
+        :returns: A future returning a list(:class:`AclBinding`) as result
 
         :rtype: future
 
@@ -423,17 +425,19 @@ class AdminClient (_AdminClientImpl):
         :param list(AclBindingFilter) acl_binding_filters: a list of ACL binding filters
                   to match ACLs to delete.
                   String attributes match exact values or any string if set to None.
-                  Enums attributes match exact values or any value if ending with _ANY.
-                  If ResourcePatternType is set to MATCH deletes all the ACL bindings with
-                  LITERAL, WILDCARD or PREFIXED pattern type that match the resource name.
+                  Enums attributes match exact values or any value if ending with `_ANY`.
+                  If :class:`ResourcePatternType` is set to :attr:`ResourcePatternType.MATCH`
+                  deletes all the ACL bindings with :attr:`ResourcePatternType.LITERAL`,
+                  :attr:`ResourcePatternType.WILDCARD` or :attr:`ResourcePatternType.PREFIXED`
+                  pattern type that match the resource name.
         :param float request_timeout: The overall request timeout in seconds,
                   including broker lookup, request transmission, operation time
                   on broker, and response. Default: `socket.timeout.ms*1000.0`
 
-        :returns: A dict of futures for each ACL binding filter, keyed by the AclBindingFilter object.
-                  The future result() method returns a list of AclBinding.
+        :returns: A dict of futures for each ACL binding filter, keyed by the :class:`AclBindingFilter` object.
+                  The future result() method returns a list of :class:`AclBinding`.
 
-        :rtype: dict(<AclBindingFilter, future>)
+        :rtype: dict[AclBindingFilter, future]
 
         :raises KafkaException: Operation failed locally or on broker.
         :raises TypeException: Invalid input.
