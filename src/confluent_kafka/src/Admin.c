@@ -1514,20 +1514,20 @@ static PyObject *
 Admin_c_topic_result_to_py (const rd_kafka_topic_result_t **c_result,
                             size_t cnt) {
         PyObject *result;
-        size_t ti;
+        size_t i;
 
         result = PyDict_New();
 
-        for (ti = 0 ; ti < cnt ; ti++) {
+        for (i = 0 ; i < cnt ; i++) {
                 PyObject *error;
 
                 error = KafkaError_new_or_None(
-                        rd_kafka_topic_result_error(c_result[ti]),
-                        rd_kafka_topic_result_error_string(c_result[ti]));
+                        rd_kafka_topic_result_error(c_result[i]),
+                        rd_kafka_topic_result_error_string(c_result[i]));
 
                 PyDict_SetItemString(
                         result,
-                        rd_kafka_topic_result_name(c_result[ti]),
+                        rd_kafka_topic_result_name(c_result[i]),
                         error);
 
                 Py_DECREF(error);
@@ -1786,24 +1786,24 @@ Admin_c_DeleteAcls_result_responses_to_py (const rd_kafka_DeleteAcls_result_resp
         const rd_kafka_AclBinding_t **c_matching_acls;
         size_t c_matching_acls_cnt;
         PyObject *result;
-        size_t ti;
+        size_t i;
 
         result = PyList_New(cnt);
 
-        for (ti = 0 ; ti < cnt ; ti++) {
+        for (i = 0 ; i < cnt ; i++) {
                 PyObject *error;
-                const rd_kafka_error_t *c_error = rd_kafka_DeleteAcls_result_response_error(c_result_responses[ti]);
+                const rd_kafka_error_t *c_error = rd_kafka_DeleteAcls_result_response_error(c_result_responses[i]);
 
                 if (c_error) {
                         error = KafkaError_new_or_None(
                                 rd_kafka_error_code(c_error),
                                 rd_kafka_error_string(c_error));
-                        PyList_SET_ITEM(result, ti, error);
+                        PyList_SET_ITEM(result, i, error);
                 } else {
                         c_matching_acls = rd_kafka_DeleteAcls_result_response_matching_acls(
-                                                                        c_result_responses[ti],
+                                                                        c_result_responses[i],
                                                                         &c_matching_acls_cnt);
-                        PyList_SET_ITEM(result, ti,
+                        PyList_SET_ITEM(result, i,
                                 Admin_c_AclBindings_to_py(c_matching_acls,c_matching_acls_cnt)
                         );
                 }
